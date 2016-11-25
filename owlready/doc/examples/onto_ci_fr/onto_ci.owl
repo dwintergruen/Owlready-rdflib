@@ -1,0 +1,84 @@
+<?xml version="1.0"?>
+<!DOCTYPE Ontology [
+    <!ENTITY xsd "http://www.w3.org/2001/XMLSchema#" >
+    <!ENTITY rdf "http://www.w3.org/1999/02/22-rdf-syntax-ns#" >
+    <!ENTITY rdfs "http://www.w3.org/2000/01/rdf-schema#" >
+    <!ENTITY owl "http://www.w3.org/2002/07/owl#" >
+    <!ENTITY owlready_ontology "http://www.lesfleursdunormal.fr/static/_downloads/owlready_ontology.owl" >
+]>
+<Ontology xmlns="http://www.w3.org/2002/07/owl#" xml:base="http://test.org/onto_ci.owl" ontologyIRI="http://test.org/onto_ci.owl"
+     xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+     xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:xml="http://www.w3.org/XML/1998/namespace"
+>
+<Prefix name="" IRI="http://test.org/onto_ci.owl"/>
+<Prefix name="owl" IRI="http://www.w3.org/2002/07/owl#"/>
+<Prefix name="rdf" IRI="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/>
+<Prefix name="xsd" IRI="http://www.w3.org/2001/XMLSchema#"/>
+<Prefix name="rdfs" IRI="http://www.w3.org/2000/01/rdf-schema#"/>
+<Prefix name="onto_ci" IRI="http://test.org/onto_ci.owl"/>
+<Import>http://www.lesfleursdunormal.fr/static/_downloads/owlready_ontology.owl</Import>
+
+<Annotation><AnnotationProperty IRI="http://www.lesfleursdunormal.fr/static/_downloads/owlready_ontology.owl#python_module"/><Literal datatypeIRI="&xsd;string">onto_ci</Literal></Annotation>
+
+<Declaration><ObjectProperty IRI="http://test.org/onto_ci.owl#a_pour_contre_indication"/></Declaration>
+<Declaration><ObjectProperty IRI="http://test.org/onto_ci.owl#est_contre_indication_de"/></Declaration>
+<Declaration><ObjectProperty IRI="http://test.org/onto_ci.owl#a_pour_condition_clinique"/></Declaration>
+<Declaration><ObjectProperty IRI="http://test.org/onto_ci.owl#est_condition_clinique_de"/></Declaration>
+<Declaration><ObjectProperty IRI="http://test.org/onto_ci.owl#a_pour_terme_niveau1"/></Declaration>
+<Declaration><ObjectProperty IRI="http://test.org/onto_ci.owl#a_pour_qualifieur"/></Declaration>
+<Declaration><Class IRI="http://test.org/onto_ci.owl#Médicament"/></Declaration>
+<Declaration><Class IRI="http://test.org/onto_ci.owl#Contre_indication"/></Declaration>
+<Declaration><Class IRI="http://test.org/onto_ci.owl#Condition_clinique"/></Declaration>
+<Declaration><Class IRI="http://test.org/onto_ci.owl#Terme_niveau1"/></Declaration>
+<Declaration><Class IRI="http://test.org/onto_ci.owl#Terme_maladie_hémorragique"/></Declaration>
+<Declaration><Class IRI="http://test.org/onto_ci.owl#Qualifieur"/></Declaration>
+<Declaration><Class IRI="http://test.org/onto_ci.owl#Qualifieur_dorigine"/></Declaration>
+<Declaration><Class IRI="http://test.org/onto_ci.owl#Acquis"/></Declaration>
+<Declaration><Class IRI="http://test.org/onto_ci.owl#Constitutionnel"/></Declaration>
+
+<InverseFunctionalObjectProperty><ObjectProperty IRI="http://test.org/onto_ci.owl#a_pour_contre_indication"/></InverseFunctionalObjectProperty>
+<InverseObjectProperties><ObjectProperty IRI="http://test.org/onto_ci.owl#a_pour_contre_indication"/><ObjectProperty IRI="http://test.org/onto_ci.owl#est_contre_indication_de"/></InverseObjectProperties>
+<ObjectPropertyDomain><ObjectProperty IRI="http://test.org/onto_ci.owl#a_pour_contre_indication"/><Class IRI="http://test.org/onto_ci.owl#Médicament"/></ObjectPropertyDomain>
+<ObjectPropertyRange><ObjectProperty IRI="http://test.org/onto_ci.owl#a_pour_contre_indication"/><Class IRI="http://test.org/onto_ci.owl#Contre_indication"/></ObjectPropertyRange>
+
+<FunctionalObjectProperty><ObjectProperty IRI="http://test.org/onto_ci.owl#est_contre_indication_de"/></FunctionalObjectProperty>
+<InverseObjectProperties><ObjectProperty IRI="http://test.org/onto_ci.owl#est_contre_indication_de"/><ObjectProperty IRI="http://test.org/onto_ci.owl#a_pour_contre_indication"/></InverseObjectProperties>
+<ObjectPropertyDomain><ObjectProperty IRI="http://test.org/onto_ci.owl#est_contre_indication_de"/><Class IRI="http://test.org/onto_ci.owl#Contre_indication"/></ObjectPropertyDomain>
+<ObjectPropertyRange><ObjectProperty IRI="http://test.org/onto_ci.owl#est_contre_indication_de"/><Class IRI="http://test.org/onto_ci.owl#Médicament"/></ObjectPropertyRange>
+
+<InverseObjectProperties><ObjectProperty IRI="http://test.org/onto_ci.owl#a_pour_condition_clinique"/><ObjectProperty IRI="http://test.org/onto_ci.owl#est_condition_clinique_de"/></InverseObjectProperties>
+<ObjectPropertyDomain><ObjectProperty IRI="http://test.org/onto_ci.owl#a_pour_condition_clinique"/><Class IRI="http://test.org/onto_ci.owl#Contre_indication"/></ObjectPropertyDomain>
+<ObjectPropertyRange><ObjectProperty IRI="http://test.org/onto_ci.owl#a_pour_condition_clinique"/><Class IRI="http://test.org/onto_ci.owl#Condition_clinique"/></ObjectPropertyRange>
+
+<InverseObjectProperties><ObjectProperty IRI="http://test.org/onto_ci.owl#est_condition_clinique_de"/><ObjectProperty IRI="http://test.org/onto_ci.owl#a_pour_condition_clinique"/></InverseObjectProperties>
+<ObjectPropertyDomain><ObjectProperty IRI="http://test.org/onto_ci.owl#est_condition_clinique_de"/><Class IRI="http://test.org/onto_ci.owl#Condition_clinique"/></ObjectPropertyDomain>
+<ObjectPropertyRange><ObjectProperty IRI="http://test.org/onto_ci.owl#est_condition_clinique_de"/><Class IRI="http://test.org/onto_ci.owl#Contre_indication"/></ObjectPropertyRange>
+
+<FunctionalObjectProperty><ObjectProperty IRI="http://test.org/onto_ci.owl#a_pour_terme_niveau1"/></FunctionalObjectProperty>
+<ObjectPropertyDomain><ObjectProperty IRI="http://test.org/onto_ci.owl#a_pour_terme_niveau1"/><Class IRI="http://test.org/onto_ci.owl#Condition_clinique"/></ObjectPropertyDomain>
+<ObjectPropertyRange><ObjectProperty IRI="http://test.org/onto_ci.owl#a_pour_terme_niveau1"/><Class IRI="http://test.org/onto_ci.owl#Terme_niveau1"/></ObjectPropertyRange>
+
+<ObjectPropertyDomain><ObjectProperty IRI="http://test.org/onto_ci.owl#a_pour_qualifieur"/><Class IRI="http://test.org/onto_ci.owl#Condition_clinique"/></ObjectPropertyDomain>
+<ObjectPropertyRange><ObjectProperty IRI="http://test.org/onto_ci.owl#a_pour_qualifieur"/><Class IRI="http://test.org/onto_ci.owl#Qualifieur"/></ObjectPropertyRange>
+
+
+
+<SubClassOf><Class IRI="http://test.org/onto_ci.owl#Condition_clinique"/>
+<ObjectExactCardinality cardinality="1"><ObjectProperty IRI="http://test.org/onto_ci.owl#a_pour_qualifieur"/><Class IRI="http://test.org/onto_ci.owl#Qualifieur_dorigine"/></ObjectExactCardinality></SubClassOf>
+
+
+<SubClassOf><Class IRI="http://test.org/onto_ci.owl#Terme_maladie_hémorragique"/><Class IRI="http://test.org/onto_ci.owl#Terme_niveau1"/></SubClassOf>
+
+
+<SubClassOf><Class IRI="http://test.org/onto_ci.owl#Qualifieur_dorigine"/><Class IRI="http://test.org/onto_ci.owl#Qualifieur"/></SubClassOf>
+<EquivalentClasses><Class IRI="http://test.org/onto_ci.owl#Qualifieur_dorigine"/>
+<ObjectUnionOf><Class IRI="http://test.org/onto_ci.owl#Acquis"/><Class IRI="http://test.org/onto_ci.owl#Constitutionnel"/></ObjectUnionOf></EquivalentClasses>
+
+<SubClassOf><Class IRI="http://test.org/onto_ci.owl#Acquis"/><Class IRI="http://test.org/onto_ci.owl#Qualifieur_dorigine"/></SubClassOf>
+
+<SubClassOf><Class IRI="http://test.org/onto_ci.owl#Constitutionnel"/><Class IRI="http://test.org/onto_ci.owl#Qualifieur_dorigine"/></SubClassOf>
+
+<DisjointClasses><Class IRI="http://test.org/onto_ci.owl#Acquis"/><Class IRI="http://test.org/onto_ci.owl#Constitutionnel"/></DisjointClasses>
+</Ontology>
