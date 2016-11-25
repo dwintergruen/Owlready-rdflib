@@ -3,6 +3,7 @@
 	<name>jibalamy-owlready</name>
 	<comment></comment>
 	<projects>
+		<project>rdflib</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

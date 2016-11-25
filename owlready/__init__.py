@@ -26,7 +26,8 @@ VERSION = "0.3a"
 import sys, os, types, tempfile, subprocess, weakref, re, urllib.request, warnings
 from io import StringIO
 from collections import defaultdict, OrderedDict
-from xml.sax.saxutils import escape
+#from xml.sax.saxutils import escape
+from urllib.parse import quote as escape #changed by dw -> to make failssaf
 import datetime
 import rdflib
 #from datetime import date, time, datetime, timedelta
@@ -541,7 +542,7 @@ class Ontology(object):
     
   def _instance_to_rdflib(self, g, write_header = 1, write_import = 1, already_included = None, rules = None):
     if write_header:
-      
+      print((URIref2("<%s>"%self.base_iri), rdflib.RDF.type, rdflib.OWL.type))
       g.add((URIref2("<%s>"%self.base_iri), rdflib.RDF.type, rdflib.OWL.type))
       
     if write_import:
@@ -736,6 +737,10 @@ class EntityClass(type):
   def __invert__(a): return NotRestriction(a)
   
   def __new__(MetaClass, name, superclasses, obj_dict, ontology = None):
+      
+    #makesure that the name is url-save
+    name =urllib.parse.quote(name)
+      
     if "is_a" in obj_dict:
       _is_a = list(superclasses) + obj_dict.pop("is_a")
       superclasses = tuple(superclass for superclass in _is_a if isinstance(superclass, EntityClass))

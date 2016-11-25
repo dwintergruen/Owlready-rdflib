@@ -5,7 +5,7 @@ https://pypi.python.org/pypi/Owlready
 
 which adds the support of rdflib to the library:
 
-It add as a .to_rdflib method.
+It adds a .to_rdflib method.
 
 Currently its not very well tested.
 
