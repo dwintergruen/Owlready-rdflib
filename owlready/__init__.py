@@ -27,7 +27,7 @@ import sys, os, types, tempfile, subprocess, weakref, re, urllib.request, warnin
 from io import StringIO
 from collections import defaultdict, OrderedDict
 #from xml.sax.saxutils import escape
-from urllib.parse import quote as escape #changed by dw -> to make failssaf
+from urllib.parse import quote
 import datetime
 import rdflib
 #from datetime import date, time, datetime, timedelta
@@ -36,6 +36,12 @@ try: import pyxb.binding.datatypes
 except: pyxb = None
 
 JAVA_EXE = "java"
+
+def escape(x):
+    try:
+        return quote(x)
+    except:
+        return x
 
 _HERE = os.path.dirname(__file__)
 _HERMIT_CLASSPATH = os.pathsep.join([os.path.join(_HERE, "hermit"), os.path.join(_HERE, "hermit", "HermiT.jar")])
@@ -2055,6 +2061,9 @@ class Annotations(object):
         ANNOT_PROPS[value] = self.obj
       
   def add_annotation(self, key, value):
+    if value is None:
+        raise ValueError("Value is None")  
+      
     key, lang = self._split_key_lang(key)
     if key is owlready_ontology.python_name: old_python_name = self.obj.python_name
     
