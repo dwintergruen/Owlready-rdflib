@@ -36,7 +36,7 @@ store.setNamespaceBindings({"ont":"http://ontology.mpiwg-berlin.mpg.de/scholarly
 
 
 
-g = rdflib.Graph(store=store,identifier="http://entities.mpiwg-berlin.mpg.de/graphs/gr/V14TEST")
-g.store.setCredentials('admin','admin')
-g.store.setHTTPAuth('DIGEST')
-owlready.to_rdflib(scholars_ontology,g)
+#g = rdflib.Graph(store=store,identifier="http://entities.mpiwg-berlin.mpg.de/graphs/gr/V14TEST")
+#g.store.setCredentials('admin','admin')
+#g.store.setHTTPAuth('DIGEST')
+#owlready.to_rdflib(scholars_ontology,g)

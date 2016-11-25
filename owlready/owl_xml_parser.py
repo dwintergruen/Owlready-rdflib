@@ -42,15 +42,15 @@ def _parse_datatype(datatype, s, lang = ""):
 class OWLXMLHandler(sax.handler.ContentHandler):
   def __init__(self, ontology = None):
     self.objs                   = []
-    self.annots                 = []
+    self.annots                 = set()
     self.current_content        = u""
     self.ontology               = ontology or Ontology("", "")
     self.prefixes               = {}
-    self.relations              = []
-    self.ontologies_to_import   = []
+    self.relations              = set()
+    self.ontologies_to_import   = set()
     self.current_lang           = None
     self.datatype_properties    = set()
-    
+    self._tmpCls              = set()
   def push_value    (self, value): self.objs.append(value)
   def push_obj      (self, attrs, type): self.objs.append(self.ontology.get_object(self.get_IRI(attrs), type))# self,base_iri=self.base_iri))
   def push_anonymous(self, attrs, type): self.objs.append(anonymous.get_object(attrs["nodeID"], type, self))
@@ -73,8 +73,11 @@ class OWLXMLHandler(sax.handler.ContentHandler):
         self.ontology.ontologyIRI=attrs["ontologyIRI"]
         
     elif (tag == "Class"):
-      self.push_obj(attrs, ThingClass)
-      if not isinstance(self.objs[-1], ThingClass): raise ValueError("'Punning' detected for %s (there is both a class and an individual with the same IRI); punning is not supported by OwlReady." % self.objs[-1])
+      attr_tmp=attrs._attrs.get("IRI")
+      if not attr_tmp in self._tmpCls:
+          self._tmpCls.add(attr_tmp)
+          self.push_obj(attrs, ThingClass)
+          if not isinstance(self.objs[-1], ThingClass): raise ValueError("'Punning' detected for %s (there is both a class and an individual with the same IRI); punning is not supported by OwlReady." % self.objs[-1])
       
     elif (tag == "NamedIndividual"):
       self.push_obj(attrs, Thing)
@@ -157,7 +160,7 @@ class OWLXMLHandler(sax.handler.ContentHandler):
       del self.objs[start :]
       
     elif (tag == "ObjectPropertyAssertion") or (tag == "DataPropertyAssertion"):
-      self.relations.append(self.objs[-3 :])
+      self.relations.add(self.objs[-3 :])
       self.purge_annotations((self.objs[-2], self.objs[-3], self.objs[-1]))
       del self.objs[-3 :]
       
@@ -202,7 +205,7 @@ class OWLXMLHandler(sax.handler.ContentHandler):
       if len(self.objs) == 2: # On ontology
         ANNOTATIONS[self.ontology].add_annotation((self.objs[-2], self.current_lang), self.objs[-1])
       else:
-        self.annots.append(((self.objs[-2], self.current_lang), self.objs[-1]))
+        self.annots.add(((self.objs[-2], self.current_lang), self.objs[-1]))
       if (self.objs[-2].name == "python_module") and (self.objs[-2].ontology.name == "owlready_ontology"):
         print("* Owlready *     ...importing Python module '%s' required by ontology '%s'..." % (self.objs[-1], self.ontology.name), file = sys.stderr)
         try: __import__(self.objs[-1])
