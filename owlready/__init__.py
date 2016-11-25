@@ -542,7 +542,7 @@ class Ontology(object):
     
   def _instance_to_rdflib(self, g, write_header = 1, write_import = 1, already_included = None, rules = None):
     if write_header:
-      print((URIref2("<%s>"%self.base_iri), rdflib.RDF.type, rdflib.OWL.type))
+     
       g.add((URIref2("<%s>"%self.base_iri), rdflib.RDF.type, rdflib.OWL.type))
       
     if write_import:
