@@ -96,6 +96,7 @@ def unload_all_ontologies():
     u'http://www.w3.org/2002/07/owl#Nothing',
     u'http://www.w3.org/2000/01/rdf-schema#isDefinedBy',
     u'http://www.w3.org/2002/07/owl#equivalent_to',
+    u'http://www.w3.org/2002/07/owl#sameAs',
     u'http://www.w3.org/2002/07/owl#FunctionalProperty',
     u'http://www.w3.org/2002/07/owl#InverseFunctionalProperty',
     u'http://www.w3.org/2002/07/owl#is_a',
@@ -274,6 +275,7 @@ def get_object(iri, type = None, parser = 2):
   elif type is Thing:                   r = Thing                  (name, **attr_dict)
   else:
     raise ValueError(type)
+  IRIS[iri]=r
   return r
 
 DEFAULT_ONTOLOGY = None
@@ -991,7 +993,7 @@ class ThingClass(EntityClass):
     Prop = PROPS.get(attr)
     if Prop is None: raise AttributeError("'%s' property is not defined." % attr)
     for domain in Prop.domain:
-      if not domain._satisfied_by(self): raise AttributeError("'%s' property has incompatible domain for %s." % (attr, self))
+      if not domain._satisfied_by(self): raise AttributeError("'%s' property has incompatible domain for %s." % (Prop, self))
     return Prop
     
   def __getattr__(self, attr):
@@ -1595,7 +1597,7 @@ def _owl_type_plural(self):
 def _owl_name(self, lang = ""):
   if   self in _OWL_NAME: return _OWL_NAME[self]
   elif(isinstance(self, EntityClass) or
-       isinstance(self, Thing)):      return """<%s IRI="%s%s%s"/>""" % (_owl_type(self), self.ontology.base_iri, self.owl_separator, escape(self.name))
+       isinstance(self, Thing) or isinstance(self, rdflib.URIRef)):      return """<%s IRI="%s%s%s"/>""" % (_owl_type(self), self.ontology.base_iri, self.owl_separator, escape(self.name))
   elif isinstance(self, Restriction): return self._restriction_to_owl()
   elif isinstance(self, bool):        return """<Literal datatypeIRI="&xsd;boolean">%s</Literal>""" % self
   elif isinstance(self, int):         return """<Literal datatypeIRI="&xsd;integer">%s</Literal>"""     % self
@@ -1613,6 +1615,7 @@ def _n3_name(self, lang = ""):
   elif(isinstance(self, EntityClass) or
        isinstance(self, Thing)):      return """<%s%s%s>""" % (self.ontology.base_iri, self.owl_separator, escape(self.name))
   elif isinstance(self, Restriction): return self._restriction_to_n3()
+  elif isinstance(self,rdflib.URIRef): return self
   elif isinstance(self, bool):        return str(self).lower()
   elif isinstance(self, int):         return  "%s"  % self
   elif isinstance(self, float):       return  "%s"  % self
@@ -2192,3 +2195,7 @@ onto_path.insert(0, os.path.dirname(__file__))
 owlready_ontology = get_ontology(base_iri=OWLREADY_ONTOLOGY_IRI).load()
 del onto_path[0]
 
+
+
+class sameAs(Property):
+    ontology = owl

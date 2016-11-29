@@ -42,15 +42,15 @@ def _parse_datatype(datatype, s, lang = ""):
 class OWLXMLHandler(sax.handler.ContentHandler):
   def __init__(self, ontology = None):
     self.objs                   = []
-    self.annots                 = set()
+    self.annots                 = []
     self.current_content        = u""
     self.ontology               = ontology or Ontology("", "")
     self.prefixes               = {}
-    self.relations              = set()
-    self.ontologies_to_import   = set()
+    self.relations              = []
+    self.ontologies_to_import   = []
     self.current_lang           = None
     self.datatype_properties    = set()
-    self._tmpCls              = set()
+  
   def push_value    (self, value): self.objs.append(value)
   def push_obj      (self, attrs, type): self.objs.append(self.ontology.get_object(self.get_IRI(attrs), type))# self,base_iri=self.base_iri))
   def push_anonymous(self, attrs, type): self.objs.append(anonymous.get_object(attrs["nodeID"], type, self))
@@ -73,11 +73,8 @@ class OWLXMLHandler(sax.handler.ContentHandler):
         self.ontology.ontologyIRI=attrs["ontologyIRI"]
         
     elif (tag == "Class"):
-      attr_tmp=attrs._attrs.get("IRI")
-      if not attr_tmp in self._tmpCls:
-          self._tmpCls.add(attr_tmp)
-          self.push_obj(attrs, ThingClass)
-          if not isinstance(self.objs[-1], ThingClass): raise ValueError("'Punning' detected for %s (there is both a class and an individual with the same IRI); punning is not supported by OwlReady." % self.objs[-1])
+      self.push_obj(attrs, ThingClass)
+      if not isinstance(self.objs[-1], ThingClass): raise ValueError("'Punning' detected for %s (there is both a class and an individual with the same IRI); punning is not supported by OwlReady." % self.objs[-1])
       
     elif (tag == "NamedIndividual"):
       self.push_obj(attrs, Thing)
