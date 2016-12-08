@@ -442,6 +442,7 @@ class Ontology(object):
         if concepts[0].startswith(self.base_iri):
           child  = IRIS[concepts[0]]
           parent = IRIS[concepts[1]]
+         
           new_parents[child].append(parent)
           
       elif relation in equiv_relations:
@@ -1197,9 +1198,13 @@ class Thing(metaclass = ThingClass):
   ontology      = owl
   name          = _NameDescriptor()
   
-  def __init__(self, name = None, ontology = None, **kargs):
+  def __init__(self, name = None, ontology = None, label= None,**kargs):
     if (ontology is None) and DEFAULT_ONTOLOGY: ontology = DEFAULT_ONTOLOGY
     if not ontology is None: self.ontology = ontology
+    #DW
+    if label is not None:
+         ANNOTATIONS[self].add_annotation(rdfs.label,label)
+    
     if isinstance(self.__class__, _FusionClass):
       self.__dict__["is_a"] = _CallbackList(self.__class__.__bases__, self, "_instance_is_a_changed", "isa")
     else:
@@ -1401,12 +1406,21 @@ def has_relation(subject, Prop, object):
   else:                               return object in getattr(subject, Prop.python_name)
   
 def _ancestor_property_value_restrictions(clazz, Prop):
-  for restrict in (clazz.is_a + clazz.equivalent_to):
-    if isinstance(restrict, PropertyValueRestriction) and (restrict.Prop is Prop):
-      yield restrict
+  #DW
+  return None
+  for restrict in (clazz.is_a + clazz.equivalent_to ):
+    x = isinstance(restrict, PropertyValueRestriction)      
+    if x:
+        y = restrict.Prop is Prop
+        if y:
+            yield restrict
     if isinstance(restrict, AndRestriction):
       for clazz2 in restrict.Classes: yield from _ancestor_property_value_restrictions(clazz2, Prop)
-    if isinstance(restrict, EntityClass): yield from _ancestor_property_value_restrictions(restrict, Prop)
+    #TODO Check this without this restriction i fet an infinit loop - after running hermit
+   
+    elif isinstance(restrict, EntityClass): 
+            
+        yield from _ancestor_property_value_restrictions(restrict, Prop)
     
 def get_relations(subject, Prop):
   Props = set(Prop.descendant_subclasses())

@@ -107,6 +107,7 @@ class OWLXMLHandler(sax.handler.ContentHandler):
       self.objs[-1] = _parse_datatype(owlready._DATATYPES_2_PYTHON[self.objs[-1]], self.current_content, self.current_lang)
       
     elif (tag == "SubClassOf") or (tag == "SubObjectPropertyOf") or (tag == "SubDataPropertyOf") or (tag == "SubAnnotationPropertyOf"):
+     
       parent = self.objs.pop()
       child  = self.objs.pop()
       if isinstance(parent, EntityClass) and issubclass(parent, child): # Cycle detected!
