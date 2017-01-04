@@ -5,6 +5,9 @@
 # University Paris 13, Sorbonne paris-Cité, Bobigny, France
 from eulxml.xmlmap.dc import rdflib
 from rdflib.term import URIRef
+from IPython.utils.sysinfo import sys_info
+from lib2to3.fixer_util import Attr
+from cssselect.parser import Attrib
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
@@ -571,7 +574,8 @@ class Ontology(object):
     for entity in self.properties + self.classes:
       entity._class_to_rdflib(g)
     for all_disjoint in self.all_disjoints:
-      all_disjoint._instance_to_rdflib(g)
+        pass #TODO DW: not implemented yet.    
+        #all_disjoint._instance_to_rdflib(g)
       
     for instance in self.instances:
       instance._instance_to_rdflib(g)
@@ -962,13 +966,7 @@ class ThingClass(EntityClass):
     _class_relation_2_rdflib(Class, owl.equivalent_to, "owl:equivalentClass", 0, Class.equivalent_to, g)
    
     for AProp, value, lang in ANNOTATIONS[Class].items():
-        g.add((cl,URIref2("%s"% _n3_name(AProp),rdflib.Literal(value,lang))))
-        #content.write('''<AnnotationAssertion>%s<IRI>%s%s%s</IRI>%s</AnnotationAssertion>\n''' % (_owl_name(AProp), Class.ontology.base_iri, Class.owl_separator, Class.name, _owl_name(value, lang)))
-   
-      
-      
-      
-      
+        g.add((cl,URIref2("%s"% _n3_name(AProp)),rdflib.Literal(value,lang)))
       
   def _get_class_possible_relations(Class):
     Props = []
@@ -1668,7 +1666,13 @@ def _instance_relation_2_rdflib(obj, Prop, value, g):
   if isinstance(value, list):
     for val in value: _instance_relation_2_rdflib(obj, Prop, val, g)
   else:
-    g.add((URIref2("%s"%_n3_name(obj)),URIref2("%s"%_n3_name(Prop)),URIref2("%s"%_n3_name(value))))
+      
+    for rangeCls in Prop.range: #gehe durch die Klassen im Range und Teste zu welcer value gehört  
+        if isinstance(rangeCls, ThingClass):
+            g.add((URIref2("%s"%_n3_name(obj)),URIref2("%s"%_n3_name(Prop)),URIref2("%s"%_n3_name(value))))
+        else: #assume is literal
+            g.add((URIref2("%s"%_n3_name(obj)),URIref2("%s"%_n3_name(Prop)),rdflib.Literal(rangeCls(value))))
+            
  
     #for AProp, annot_value, lang in ANNOTATIONS[obj, Prop, value].items():
     #  f.write('''\n<Annotation>%s%s</Annotation>\n''' % (_owl_name(AProp), _owl_name(annot_value, lang)))
