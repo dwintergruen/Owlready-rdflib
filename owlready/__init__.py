@@ -228,7 +228,7 @@ def _open_onto_file(base_iri, name, mode = "r", only_local = False):
   if base_iri.startswith("file://"): return open(base_iri[7:], mode)
   for dir in onto_path:
     filename = os.path.join(dir, "%s.owl" % name)
-    if os.path.exists(filename): return open(filename, mode)
+    if os.path.exists(filename): return open(filename, mode,encoding="utf-8")
   if (mode == "r") and not only_local: return urllib.request.urlopen(base_iri)
   if (mode == "w"): return open(os.path.join(onto_path[0], "%s.owl" % name), "w")
   raise FileNotFoundError
@@ -1666,14 +1666,17 @@ def _instance_relation_2_rdflib(obj, Prop, value, g):
   if isinstance(value, list):
     for val in value: _instance_relation_2_rdflib(obj, Prop, val, g)
   else:
-      
-    for rangeCls in Prop.range: #gehe durch die Klassen im Range und Teste zu welcer value gehört  
-        if isinstance(rangeCls, ThingClass):
-            g.add((URIref2("%s"%_n3_name(obj)),URIref2("%s"%_n3_name(Prop)),URIref2("%s"%_n3_name(value))))
-        else: #assume is literal
-            g.add((URIref2("%s"%_n3_name(obj)),URIref2("%s"%_n3_name(Prop)),rdflib.Literal(rangeCls(value))))
-            
- 
+    
+    if len(Prop.range)==0:
+        g.add((URIref2("%s"%_n3_name(obj)),URIref2("%s"%_n3_name(Prop)),URIref2("%s"%_n3_name(value))))
+    else:
+        for rangeCls in Prop.range: #gehe durch die Klassen im Range und Teste zu welcer value gehört  
+            if isinstance(rangeCls, ThingClass):
+                g.add((URIref2("%s"%_n3_name(obj)),URIref2("%s"%_n3_name(Prop)),URIref2("%s"%_n3_name(value))))
+            else: #assume is literal
+                g.add((URIref2("%s"%_n3_name(obj)),URIref2("%s"%_n3_name(Prop)),rdflib.Literal(rangeCls(value))))
+                
+     
     #for AProp, annot_value, lang in ANNOTATIONS[obj, Prop, value].items():
     #  f.write('''\n<Annotation>%s%s</Annotation>\n''' % (_owl_name(AProp), _owl_name(annot_value, lang)))
     
