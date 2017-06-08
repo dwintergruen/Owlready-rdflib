@@ -22,18 +22,19 @@ from cssselect.parser import Attrib
 # You should have received a copy of the GNU Lesser General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-#modfied by DW
-VERSION = "0.3a"
+# modfied by DW
+# removed .get by [] because if performance issues
+VERSION = "0.3b"
 
 
 import sys, os, types, tempfile, subprocess, weakref, re, urllib.request, warnings
 from io import StringIO
 from collections import defaultdict, OrderedDict
-#from xml.sax.saxutils import escape
+# from xml.sax.saxutils import escape
 from urllib.parse import quote
 import datetime
 import rdflib
-#from datetime import date, time, datetime, timedelta
+# from datetime import date, time, datetime, timedelta
 
 try: import pyxb.binding.datatypes
 except: pyxb = None
@@ -65,7 +66,7 @@ class OwlReadyRangelessDataProperty (OwlReadyWarning): pass
 
 def URIref2(url):
     if url.startswith("<") and url.endswith(">"):
-        url =url[1:-1]
+        url = url[1:-1]
     return rdflib.URIRef(url);
     
     
@@ -73,8 +74,8 @@ def unload_all_ontologies():
   global onto_path
   onto_path = []
   global ONTOLOGIES
-  keys_ONTOLOGIES = {u'http://anonymous',u'http://www.lesfleursdunormal.fr/static/_downloads/owlready_ontology.owl',u'http://www.w3.org/1999/02/22-rdf-syntax-ns',u'http://www.w3.org/2000/01/rdf-schema',u'http://www.w3.org/2001/XMLSchema',u'http://www.w3.org/2002/07/owl'}
-  del_key=[]
+  keys_ONTOLOGIES = {u'http://anonymous', u'http://www.lesfleursdunormal.fr/static/_downloads/owlready_ontology.owl', u'http://www.w3.org/1999/02/22-rdf-syntax-ns', u'http://www.w3.org/2000/01/rdf-schema', u'http://www.w3.org/2001/XMLSchema', u'http://www.w3.org/2002/07/owl'}
+  del_key = []
   for key in ONTOLOGIES:
     if key not in keys_ONTOLOGIES:
       del_key.append(key)
@@ -116,7 +117,7 @@ def unload_all_ontologies():
     u'http://www.w3.org/2001/XMLSchema',
     u'http://www.w3.org/2002/07/owl#AnnotationProperty'
     }
-  del_key=[]
+  del_key = []
   for key in IRIS:
     if key not in keys_IRIS:
       del_key.append(key)
@@ -125,9 +126,9 @@ def unload_all_ontologies():
 class normstr(str): pass
 
 
-PROPS       = {}
+PROPS = {}
 ANNOT_PROPS = {}
-IRIS        = {}
+IRIS = {}
 
 def forward_declaration(o):
   o._forward_declared = True
@@ -135,7 +136,7 @@ def forward_declaration(o):
 
 def to_owl(self, **kargs):
   definition = StringIO()
-  content    = StringIO()
+  content = StringIO()
   if isinstance(self, EntityClass) or isinstance(self, Restriction): self._class_to_owl   (definition, content, **kargs)
   else:                                                              self._instance_to_owl(definition, content, **kargs)
   return "%s\n%s" % (definition.getvalue(), content.getvalue())
@@ -145,11 +146,11 @@ def to_rdflib(self, g, **kargs):
 
   if isinstance(self, EntityClass) or isinstance(self, Restriction): self._class_to_rdflib   (g, **kargs)
   else:                                                              self._instance_to_rdflib(g, **kargs)
-  #return "%s\n%s" % (definition.getvalue(), content.getvalue())
+  # return "%s\n%s" % (definition.getvalue(), content.getvalue())
 
 def to_n3(self, **kargs):
   definition = StringIO()
-  content    = StringIO()
+  content = StringIO()
   if isinstance(self, EntityClass) or isinstance(self, Restriction): self._class_to_n3   (definition, content, **kargs)
   else:                                                              self._instance_to_n3(definition, content, **kargs)
   return "%s\n%s" % (definition.getvalue(), content.getvalue())
@@ -162,12 +163,12 @@ def to_python(self):
 
 class _PythonSerializer(object):
   def __init__(self):
-    self.class_definition    = StringIO()
-    self.class_content       = StringIO()
+    self.class_definition = StringIO()
+    self.class_content = StringIO()
     self.instance_definition = StringIO()
-    self.instance_content    = StringIO()
-    self.need_forward_decls  = set()
-    self.declareds           = set(_PYTHON_2_DATATYPES.keys())
+    self.instance_content = StringIO()
+    self.need_forward_decls = set()
+    self.declareds = set(_PYTHON_2_DATATYPES.keys())
     
   def referenced(self, Class):
     if   isinstance(Class, Restriction): Class._referenced(self)
@@ -180,7 +181,7 @@ class _PythonSerializer(object):
     return "%s\n%s\n%s\n%s" % (self.class_definition.getvalue(), self.class_content.getvalue(), self.instance_definition.getvalue(), self.instance_content.getvalue())
   
 class AllDisjoint(object):
-  def __init__(self, *Entities, ontology = None):
+  def __init__(self, *Entities, ontology=None):
     self.Entities = list(Entities)
     if ontology is None: ontology = Entities[0].ontology
     ontology.add(self)
@@ -204,7 +205,7 @@ class AllDisjoint(object):
     else:
       content.write("""<DifferentIndividuals>%s</DifferentIndividuals>\n""" % "".join(_owl_name(instance) for instance in self.Entities))
       
-   #todo restrictions in rdflib
+   # todo restrictions in rdflib
   def _restriction_to_rdflib(self):
       return
   def _instance_to_n3(self, definition, content):
@@ -223,19 +224,19 @@ AllDistinct = AllDisjoint
 
 onto_path = []
 
-def _open_onto_file(base_iri, name, mode = "r", only_local = False):
-  #if base_iri == OWLREADY_ONTOLOGY_IRI: return open(os.path.join(_HERE, "owl", "owlready_ontology.owl"), mode)
+def _open_onto_file(base_iri, name, mode="r", only_local=False):
+  # if base_iri == OWLREADY_ONTOLOGY_IRI: return open(os.path.join(_HERE, "owl", "owlready_ontology.owl"), mode)
   if base_iri.startswith("file://"): return open(base_iri[7:], mode)
   for dir in onto_path:
     filename = os.path.join(dir, "%s.owl" % name)
-    if os.path.exists(filename): return open(filename, mode,encoding="utf-8")
+    if os.path.exists(filename): return open(filename, mode, encoding="utf-8")
   if (mode == "r") and not only_local: return urllib.request.urlopen(base_iri)
   if (mode == "w"): return open(os.path.join(onto_path[0], "%s.owl" % name), "w")
   raise FileNotFoundError
 
 ONTOLOGIES = {}
-#this is not correct the base uri has to be read from the o_wl ontolofy
-def get_ontology(base_iri=None,owl_url=None):
+# this is not correct the base uri has to be read from the o_wl ontolofy
+def get_ontology(base_iri=None, owl_url=None):
      
     if base_iri is None and owl_url is None:
         raise Exception("base_iri or owl_url has to be defined!")
@@ -252,7 +253,7 @@ def get_ontology(base_iri=None,owl_url=None):
     
     
 
-def get_object(iri, type = None, parser = 2):
+def get_object(iri, type=None, parser=2):
   if not (iri.startswith("http:") or iri.startswith("file:")): raise ValueError
   if iri in IRIS: return IRIS[iri]
   if type is None:
@@ -278,30 +279,30 @@ def get_object(iri, type = None, parser = 2):
   elif type is Thing:                   r = Thing                  (name, **attr_dict)
   else:
     raise ValueError(type)
-  IRIS[iri]=r
+  IRIS[iri] = r
   return r
 
 DEFAULT_ONTOLOGY = None
 
 class Ontology(object):
-  def __init__(self, base_iri, force_non_dot_owl_iri = False):
-    self.base_iri  = base_iri
+  def __init__(self, base_iri, force_non_dot_owl_iri=False):
+    self.base_iri = base_iri
    
     if base_iri is not None:
         if base_iri.endswith("/") or base_iri.endswith("#"): raise ValueError("Ontology IRI must not ends with '/' or '#'; please remove it.")
        
-        self.name                  = base_iri.rsplit("/", 1)[-1]
+        self.name = base_iri.rsplit("/", 1)[-1]
         if self.name.endswith(".owl"): self.name = self.name[:-4]
-        self.imported_ontologies   = []
-        self.classes               = []
-        self.properties            = []
+        self.imported_ontologies = []
+        self.classes = []
+        self.properties = []
         self.annotation_properties = []
-        self.all_disjoints         = []
-        self.instances             = []
-        self.loaded                = False
+        self.all_disjoints = []
+        self.instances = []
+        self.loaded = False
         if self.base_iri in ONTOLOGIES: raise ValueError("An ontology named '%s' already exists!" % self.base_iri)
-        ONTOLOGIES[self.base_iri]  = IRIS[self.base_iri] = self
-        print("* Owlready * Creating new ontology %s <%s>." % (self.name, self.base_iri), file = sys.stderr)
+        ONTOLOGIES[self.base_iri] = IRIS[self.base_iri] = self
+        print("* Owlready * Creating new ontology %s <%s>." % (self.name, self.base_iri), file=sys.stderr)
         if (not base_iri.endswith(".owl")) and (not force_non_dot_owl_iri):
             warnings.warn("Ontology IRI '%s' does not ends with '.owl' as expected." % base_iri, OwlReadyOntologyIRIWarning, 3)
           
@@ -313,8 +314,8 @@ class Ontology(object):
     for ontology in self.imported_ontologies: ontologies.update(ontology.indirectly_imported_ontologies())
     return ontologies
   
-  #changed assume now that there is owl_url set and the base_uri is taken out of the file
-  def load(self, only_local = False):
+  # changed assume now that there is owl_url set and the base_uri is taken out of the file
+  def load(self, only_local=False):
     if self.loaded: return self
     if self.base_iri is not None:
         filepath = self.base_iri 
@@ -323,42 +324,42 @@ class Ontology(object):
         
     f = _open_onto_file(filepath, self.name, "r", only_local)
     self.loaded = True
-    print("* Owlready *     ...loading ontology %s from %s..." % (self.name, getattr(f, "name", "") or getattr(f, "url", "???")), file = sys.stderr)
+    print("* Owlready *     ...loading ontology %s from %s..." % (self.name, getattr(f, "name", "") or getattr(f, "url", "???")), file=sys.stderr)
     import owlready.owl_xml_parser
 
     parsed = owlready.owl_xml_parser.parse(f, self)
     
     if hasattr(parsed, "ontologyIRI"):
-        self.base_iri=parsed.ontologyIRI
+        self.base_iri = parsed.ontologyIRI
     return parsed
 
-  def save(self, filename = None):
+  def save(self, filename=None):
     owl = to_owl(self)
     if filename: f = open(filename, "w")
     else:        f = _open_onto_file(self.base_iri, self.name, "w")
-    print("* Owlready * Saving ontology %s to %s..." % (self.name, getattr(f, "name", "???")), file = sys.stderr)
+    print("* Owlready * Saving ontology %s to %s..." % (self.name, getattr(f, "name", "???")), file=sys.stderr)
     f.write(owl)
     
   def add(self, o):
-    if   isinstance(o, AllDisjoint):             self.all_disjoints        .append(o); return # No name => skip last line
+    if   isinstance(o, AllDisjoint):             self.all_disjoints        .append(o); return  # No name => skip last line
     elif isinstance(o, ThingClass):              self.classes              .append(o)
     elif isinstance(o, PropertyClass):           self.properties           .append(o)
     elif isinstance(o, AnnotationPropertyClass): self.annotation_properties.append(o)
     elif isinstance(o, Thing):                   self.instances            .append(o)
     else: raise ValueError
-    if hasattr(o.ontology,'ontologyIRI'):
+    if hasattr(o.ontology, 'ontologyIRI'):
         iri = o.ontology.ontologyIRI
         if iri.endswith("/") or iri.endswith("#"):
             sep = ""
             o.owl_separator = ""
         else:
-            sep=o.owl_separator
+            sep = o.owl_separator
         
     else:
         iri = o.ontology.base_iri
-        sep=o.owl_separator
+        sep = o.owl_separator
     
-    _iri_changed(o, "%s%s%s" % (iri,sep, o.name), "%s%s%s" % (iri, sep, o.name))
+    _iri_changed(o, "%s%s%s" % (iri, sep, o.name), "%s%s%s" % (iri, sep, o.name))
     o.ontology = self
 
   def remove_unreachables(self, from_classes_and_instances):
@@ -368,17 +369,17 @@ class Ontology(object):
       if isinstance(o, Thing): o._instance_refered_object(reachables)
       else:                    o.         _refered_object(reachables)
       
-    classes      = [o for o in self.classes   if o in reachables]
-    instances    = [o for o in self.instances if o in reachables]
+    classes = [o for o in self.classes   if o in reachables]
+    instances = [o for o in self.instances if o in reachables]
     unreachables = [o for o in self.classes   if not o in reachables] + [o for o in self.instances if not o in reachables]
-    self.classes   = classes
+    self.classes = classes
     self.instances = instances
     return unreachables
     
   def instances_of (self, Class): return (instance for instance in self.instances if isinstance(instance, Class))
   def subclasses_of(self, Class): return (klass    for klass    in self.classes   if issubclass(klass   , Class))
   
-  def get_object(self, iri, type = None, parser = None,base_iri=None):
+  def get_object(self, iri, type=None, parser=None, base_iri=None):
     if base_iri is not None:
         self.base_iri = base_iri
     if not parser: parser = 3
@@ -395,7 +396,7 @@ class Ontology(object):
     else: 
         iri = "%s#%s" % (self.base_iri, attr)
     if iri in IRIS: return IRIS[iri]
-    #neuer versuch
+    # neuer versuch
     
     iri = "%s/%s" % (self.base_iri, attr)
     if iri in IRIS: return IRIS[iri]
@@ -404,34 +405,34 @@ class Ontology(object):
   
   def __getitem__(self, attr): return getattr(self, attr)
   
-  #_HERMIT_RESULT_REGEXP = re.compile("^([A-Za-z]+)\\( <([^>]+)> <([^>]+)> \\)$", re.MULTILINE)
+  # _HERMIT_RESULT_REGEXP = re.compile("^([A-Za-z]+)\\( <([^>]+)> <([^>]+)> \\)$", re.MULTILINE)
   _HERMIT_RESULT_REGEXP = re.compile("^([A-Za-z]+)\\( ((?:<(?:[^>]+)>\s*)+) \\)$", re.MULTILINE)
-  def sync_reasoner(self, rules = None, debug = 1, keep_tmp_file = 0):
+  def sync_reasoner(self, rules=None, debug=1, keep_tmp_file=0):
     if isinstance(rules, Rules): rules = (rules,)
-    tmp = tempfile.NamedTemporaryFile("w", delete = 0)
-    tmp.write(to_owl(self, write_import = 0, rules = rules))
+    tmp = tempfile.NamedTemporaryFile("w", delete=0)
+    tmp.write(to_owl(self, write_import=0, rules=rules))
     tmp.close()
-    command = [JAVA_EXE, "-Xmx2000M", "-cp", _HERMIT_CLASSPATH, "org.semanticweb.HermiT.cli.CommandLine", "-c", "-O", "-D", "-I", "file:///%s" % tmp.name.replace('\\','/')]
+    command = [JAVA_EXE, "-Xmx2000M", "-cp", _HERMIT_CLASSPATH, "org.semanticweb.HermiT.cli.CommandLine", "-c", "-O", "-D", "-I", "file:///%s" % tmp.name.replace('\\', '/')]
     if debug:
       import time
-      print("* Owlready * Running HermiT...", file = sys.stderr)
-      print("    %s" % " ".join(command), file = sys.stderr)
+      print("* Owlready * Running HermiT...", file=sys.stderr)
+      print("    %s" % " ".join(command), file=sys.stderr)
       t0 = time.time()
     output = subprocess.check_output(command)
-    output = output.decode("utf8").replace("\r","")
+    output = output.decode("utf8").replace("\r", "")
     if debug:
-      print("* Owlready * HermiT took %s seconds" % (time.time() - t0), file = sys.stderr)
+      print("* Owlready * HermiT took %s seconds" % (time.time() - t0), file=sys.stderr)
       if debug > 1:
-        print("* Owlready * HermiT output:", file = sys.stderr)
-        print(output, file = sys.stderr)
+        print("* Owlready * HermiT output:", file=sys.stderr)
+        print(output, file=sys.stderr)
         
-    print(output, file = open("/tmp/sortie_hermit.txt", "w"))
+    print(output, file=open("/tmp/sortie_hermit.txt", "w"))
         
-    is_a_relations  = {"SubClassOf", "SubObjectPropertyOf", "SubDataPropertyOf", "Type"}
+    is_a_relations = {"SubClassOf", "SubObjectPropertyOf", "SubDataPropertyOf", "Type"}
     equiv_relations = {"EquivalentClasses", "EquivalentObjectProperties", "EquivalentDataProperties"}
     
-    #new_parents = defaultdict(list)
-    #for relation, child, parent in self._HERMIT_RESULT_REGEXP.findall(output):
+    # new_parents = defaultdict(list)
+    # for relation, child, parent in self._HERMIT_RESULT_REGEXP.findall(output):
     #  if relation in is_a_relations:
     #    if child.startswith(self.base_iri):
     #      child  = IRIS[child ]
@@ -443,7 +444,7 @@ class Ontology(object):
       concepts = concepts[1:-1].split("> <")
       if  relation in is_a_relations:
         if concepts[0].startswith(self.base_iri):
-          child  = IRIS[concepts[0]]
+          child = IRIS[concepts[0]]
           parent = IRIS[concepts[1]]
          
           new_parents[child].append(parent)
@@ -454,14 +455,14 @@ class Ontology(object):
             concept = IRIS[concept_iri]
             if "http://www.w3.org/2002/07/owl#Nothing" in concepts:
               concept.equivalent_to.append(Nothing)
-              if debug: print("* Owlready * Equivalenting:", concept, "Nothing", file = sys.stderr)
+              if debug: print("* Owlready * Equivalenting:", concept, "Nothing", file=sys.stderr)
               
             else:
               for other_concept_iri in concepts:
                 if concept_iri == other_concept_iri: continue
                 other_concept = IRIS[other_concept_iri]
                 concept.equivalent_to.append(other_concept)
-                if debug: print("* Owlready * Equivalenting:", concept, other_concept, file = sys.stderr)
+                if debug: print("* Owlready * Equivalenting:", concept, other_concept, file=sys.stderr)
                 
     for child, parents in new_parents.items():
       old = set(parent for parent in child.is_a if not isinstance(parent, Restriction))
@@ -471,12 +472,12 @@ class Ontology(object):
           if isinstance(parent_eq, ThingClass):
             new.add(parent_eq)
         
-      new.update(old & _TYPES) # Types are not shown by HermiT
+      new.update(old & _TYPES)  # Types are not shown by HermiT
       if old == new: continue
-      new = _keep_most_specific(new, consider_equivalence = False)
+      new = _keep_most_specific(new, consider_equivalence=False)
       if old == new: continue
       
-      if debug: print("* Owlready * Reparenting %s:" % child, old, "=>", new, file = sys.stderr)
+      if debug: print("* Owlready * Reparenting %s:" % child, old, "=>", new, file=sys.stderr)
       new_is_a = list(child.is_a)
       for removed in old - new: new_is_a.remove(removed)
       for added   in new - old: new_is_a.append(added)
@@ -484,7 +485,7 @@ class Ontology(object):
       
       for child_eq in child.equivalent_to:
         if isinstance(child_eq, ThingClass):
-          if debug: print("* Owlready * Reparenting %s (since equivalent):" % child_eq, old, "=>", new, file = sys.stderr)
+          if debug: print("* Owlready * Reparenting %s (since equivalent):" % child_eq, old, "=>", new, file=sys.stderr)
           new_is_a = list(child_eq.is_a)
           for removed in old - new:
             if removed in new_is_a: new_is_a.remove(removed)
@@ -496,7 +497,7 @@ class Ontology(object):
   def __str__ (self): return self.name
   def __repr__(self): return "<Ontology %s>" % self.name
   
-  def _instance_to_owl(self, definition, content, write_header = 1, write_import = 1, already_included = None, rules = None):
+  def _instance_to_owl(self, definition, content, write_header=1, write_import=1, already_included=None, rules=None):
     if write_header:
       definition.write("""<?xml version="1.0"?>\n""")
       
@@ -534,7 +535,7 @@ class Ontology(object):
       for imported_ontology in self.imported_ontologies:
         if not imported_ontology in already_included:
           already_included.add(imported_ontology)
-          definition.write(to_owl(imported_ontology, write_header = 0, write_import = 0, already_included = already_included))
+          definition.write(to_owl(imported_ontology, write_header=0, write_import=0, already_included=already_included))
           
     definition.write('''\n''')
     
@@ -552,14 +553,14 @@ class Ontology(object):
       
     if write_header: content.write("""</Ontology>\n""")
     
-  def _instance_to_rdflib(self, g, write_header = 1, write_import = 1, already_included = None, rules = None):
+  def _instance_to_rdflib(self, g, write_header=1, write_import=1, already_included=None, rules=None):
     if write_header:
      
-      g.add((URIref2("<%s>"%self.base_iri), rdflib.RDF.type, rdflib.OWL.type))
+      g.add((URIref2("<%s>" % self.base_iri), rdflib.RDF.type, rdflib.OWL.type))
       
     if write_import:
       for imported_ontology in self.imported_ontologies:
-        g.add((URIref2("%s"%imported_ontology.base_iri[0]), rdflib.OWL.imports,URIref2("<%s>" % imported_ontology.base_iri[1])))
+        g.add((URIref2("%s" % imported_ontology.base_iri[0]), rdflib.OWL.imports, URIref2("<%s>" % imported_ontology.base_iri[1])))
         
      
     else:
@@ -567,24 +568,24 @@ class Ontology(object):
       for imported_ontology in self.imported_ontologies:
         if not imported_ontology in already_included:
           already_included.add(imported_ontology)
-          g.add(to_rdflib(imported_ontology, write_header = 0, write_import = 0, already_included = already_included))
+          g.add(to_rdflib(imported_ontology, write_header=0, write_import=0, already_included=already_included))
           
     
     
     for entity in self.properties + self.classes:
       entity._class_to_rdflib(g)
     for all_disjoint in self.all_disjoints:
-        pass #TODO DW: not implemented yet.    
-        #all_disjoint._instance_to_rdflib(g)
+        pass  # TODO DW: not implemented yet.    
+        # all_disjoint._instance_to_rdflib(g)
       
     for instance in self.instances:
       instance._instance_to_rdflib(g)
     
-    #TODO: transform rules to RDFLIb  
-    #if rules:
+    # TODO: transform rules to RDFLIb  
+    # if rules:
     # for r in rules: content.write("""%s\n""" % r.get_rules())
     
-  def _instance_to_n3(self, definition, content, write_header = 1, write_import = 1, already_included = None, rules = None):
+  def _instance_to_n3(self, definition, content, write_header=1, write_import=1, already_included=None, rules=None):
     if write_header:
       definition.write("""@prefix log: <http://www.w3.org/2000/10/swap/log#>.\n""")
       definition.write("""@prefix math: <http://www.w3.org/2000/10/swap/math#>.\n""")
@@ -593,7 +594,7 @@ class Ontology(object):
       definition.write("""@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.\n""")
       definition.write("""@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.\n""")
       definition.write("""\n""")
-      #for onto in self.imported_ontologies:
+      # for onto in self.imported_ontologies:
       #  definition.write("""%s owl:imports \n""" % (onto.name, onto.base_iri))
       
       definition.write("""<%s> a owl:Ontology.\n""" % self.base_iri)
@@ -602,7 +603,7 @@ class Ontology(object):
       for imported_ontology in self.imported_ontologies:
         definition.write("""%s owl:imports <%s>.\n""" % imported_ontology.base_iri)
         
-      #for AProp, annot_value, lang in ANNOTATIONS[self].items():
+      # for AProp, annot_value, lang in ANNOTATIONS[self].items():
       #  definition.write('''\n<Annotation>%s%s</Annotation>\n''' % (_owl_name(AProp), _owl_name(annot_value, lang)))
       
     else:
@@ -610,7 +611,7 @@ class Ontology(object):
       for imported_ontology in self.imported_ontologies:
         if not imported_ontology in already_included:
           already_included.add(imported_ontology)
-          definition.write(to_n3(imported_ontology, write_header = 0, write_import = 0, already_included = already_included))
+          definition.write(to_n3(imported_ontology, write_header=0, write_import=0, already_included=already_included))
           
     definition.write("\n")
     
@@ -647,21 +648,21 @@ class Ontology(object):
       s.instance_content.write("""\n""")
   
 
-owl       = Ontology("http://www.w3.org/2002/07/owl"             , force_non_dot_owl_iri = True)
-rdf       = Ontology("http://www.w3.org/1999/02/22-rdf-syntax-ns", force_non_dot_owl_iri = True)
-rdfs      = Ontology("http://www.w3.org/2000/01/rdf-schema"      , force_non_dot_owl_iri = True)
-xsd       = Ontology("http://www.w3.org/2001/XMLSchema"          , force_non_dot_owl_iri = True)
-anonymous = Ontology("http://anonymous"                          , force_non_dot_owl_iri = True)
+owl = Ontology("http://www.w3.org/2002/07/owl"             , force_non_dot_owl_iri=True)
+rdf = Ontology("http://www.w3.org/1999/02/22-rdf-syntax-ns", force_non_dot_owl_iri=True)
+rdfs = Ontology("http://www.w3.org/2000/01/rdf-schema"      , force_non_dot_owl_iri=True)
+xsd = Ontology("http://www.w3.org/2001/XMLSchema"          , force_non_dot_owl_iri=True)
+anonymous = Ontology("http://anonymous"                          , force_non_dot_owl_iri=True)
 
-class Property:           pass # Fake "fordward" declaration
-class AnnotationProperty: pass # Fake "fordward" declaration
+class Property:           pass  # Fake "fordward" declaration
+class AnnotationProperty: pass  # Fake "fordward" declaration
 
 class _CallbackList(list):
   def __init__(self, l, obj, func_name, Prop):
     super().__init__(l)
-    self._obj       = obj
+    self._obj = obj
     self._func_name = func_name
-    self._Prop      = Prop
+    self._Prop = Prop
   def _call_callback(self, old): getattr(self._obj, self._func_name)(self, self._Prop, old)
   def _set  (self, l):          super().__init__(l)
   def _remove(self, x):         super().remove(x)
@@ -681,21 +682,28 @@ class GeneratedName(object):
   def generate_name(self): return "__generated_name__"
 
 def _iri_changed(obj, old_iri, new_iri):
-  if new_iri == "http://purl.obolibrary.org/obo#BFO_0000050": efjozeif
-  if IRIS.get(old_iri) is obj: del IRIS[old_iri]
+  # if new_iri == "http://purl.obolibrary.org/obo#BFO_0000050": efjozeif
+  
+  try:
+      if IRIS[old_iri] is obj: del IRIS[old_iri]
+  except KeyError:
+      pass
  
   
   IRIS[new_iri] = obj
 
-def _unique_name(instance, name, add_1 = False):
+def _unique_name(instance, name, add_1=False):
   base_name = name
   if add_1: name = "%s_1" % base_name
-  current = IRIS.get("%s%s%s"   % (instance.ontology.base_iri, instance.owl_separator, name))
-  if (not current is None) and (not current is instance): # Dupplicated IRI => rename
+  try:
+      current = IRIS["%s%s%s" % (instance.ontology.base_iri, instance.owl_separator, name)]
+  except KeyError:
+      current = None
+  if (not current is None) and (not current is instance):  # Dupplicated IRI => rename
     i = 2
     while 1:
       name = "%s_%s" % (base_name, i)
-      current = IRIS.get("%s%s%s" % (instance.ontology.base_iri, instance.owl_separator, name))
+      current = IRIS["%s%s%s" % (instance.ontology.base_iri, instance.owl_separator, name)]
       if (current is None) or (current is instance): break
       i += 1
   return name
@@ -716,14 +724,14 @@ class _NameDescriptor(object):
       return name
     return ((instance is None) and owner._name) or instance._name
     
-  def __set__(self, instance, new_name): # instance is a Class or an instance
+  def __set__(self, instance, new_name):  # instance is a Class or an instance
     
     if hasattr(instance.ontology, "ontologyIRI"):
         if instance.ontology.ontologyIRI.endswith("/") or  instance.ontology.ontologyIRI.endswith("#"):
             sep = ""
-            instance.owl_separator=""
+            instance.owl_separator = ""
         else:
-            sep =  instance.owl_separator
+            sep = instance.owl_separator
         
         _iri_changed(instance, "%s%s%s" % (instance.ontology.ontologyIRI, sep, instance._name), "%s%s%s" % (instance.ontology.ontologyIRI, sep, new_name))
     else:
@@ -731,7 +739,7 @@ class _NameDescriptor(object):
     instance._name = new_name
     
 
-#class _OntologyDescriptor(object):
+# class _OntologyDescriptor(object):
 #  def __get__(self, instance, owner): return ((instance is None) and owner._ontology) or instance._ontology
 #  
 #  def __set__(self, instance, new_ontology): # instance is a Class or an instance
@@ -741,18 +749,18 @@ class _NameDescriptor(object):
     
 class EntityClass(type):
   owl_separator = "#"
-  ontology      = owl
-  name          = _NameDescriptor()
-  _name         = "EntityClass"
+  ontology = owl
+  name = _NameDescriptor()
+  _name = "EntityClass"
   
   def __and__(a, b): return AndRestriction(a, b)
   def __or__ (a, b): return OrRestriction (a, b)
   def __invert__(a): return NotRestriction(a)
   
-  def __new__(MetaClass, name, superclasses, obj_dict, ontology = None):
+  def __new__(MetaClass, name, superclasses, obj_dict, ontology=None):
       
-    #makesure that the name is url-save
-    name =urllib.parse.quote(name)
+    # makesure that the name is url-save
+    name = urllib.parse.quote(name)
       
     if "is_a" in obj_dict:
       _is_a = list(superclasses) + obj_dict.pop("is_a")
@@ -765,11 +773,17 @@ class EntityClass(type):
       if DEFAULT_ONTOLOGY:
         ontology = DEFAULT_ONTOLOGY
       else:
-        ontology = obj_dict.get("ontology")
+        try:
+            ontology = obj_dict["ontology"]
+        except KeyError:
+            ontology = None
         if (not ontology) and superclasses: ontology = superclasses[0].ontology
         
     if ontology:
-      Class = IRIS.get("%s%s%s" % (ontology.base_iri, obj_dict.get("owl_separator", "#"), name))
+      try:
+       Class = IRIS["%s%s%s" % (ontology.base_iri, obj_dict.get("owl_separator", "#"), name)]
+      except KeyError:
+          Class = None
       if Class and (not getattr(Class, "_forward_declared", False)): Class = None
     else: Class = None
       
@@ -799,7 +813,7 @@ class EntityClass(type):
       return mro
     
   def _recalc_mro(Class):
-    Class.__bases__  = Class.__bases__ + () # Force MRO recalculation
+    Class.__bases__ = Class.__bases__ + ()  # Force MRO recalculation
 
   def __subclasscheck__(Class, Subclass):
     if type.__subclasscheck__(Class, Subclass): return True
@@ -881,29 +895,29 @@ def _class_relation_2_n3(Class, Prop, prop_name, functional, value, f):
     if not functional:
         for val in value: _class_relation_2_n3(Class, Prop, prop_name, 1, val, f)
     elif not value is None:
-    #if ((prop_name == "SubClassOf") or (prop_name == "SubObjectPropertyOf") or (prop_name == "SubDataPropertyOf")) and (value in _TYPES):
-      #spc = 1
-      #prop_name = value.name
-      #if isinstance(Class, PropertyClass):
+    # if ((prop_name == "SubClassOf") or (prop_name == "SubObjectPropertyOf") or (prop_name == "SubDataPropertyOf")) and (value in _TYPES):
+      # spc = 1
+      # prop_name = value.name
+      # if isinstance(Class, PropertyClass):
       #  if Class._is_data_property(): type = "Data"
       #  else:                         type = "Object"
       #  prop_name = prop_name.replace("Propert", "%sPropert" % type)
-    #else: spc = 0
+    # else: spc = 0
     
         f.write("%s %s %s.\n" % (_n3_name(Class), prop_name, _n3_name(value)))
     
-    #if Prop:
+    # if Prop:
     #  for AProp, annot_value, lang in ANNOTATIONS[Class, Prop, value].items():
     #    f.write('''\n<Annotation>%s%s</Annotation>\n''' % (_owl_name(AProp), _owl_name(annot_value, lang)))
         
-    #if spc: f.write("%s</%s>\n" % (_owl_name(Class), prop_name))
-    #else:   f.write("%s%s</%s>\n" % (_owl_name(Class), _owl_name(value), prop_name))
+    # if spc: f.write("%s</%s>\n" % (_owl_name(Class), prop_name))
+    # else:   f.write("%s%s</%s>\n" % (_owl_name(Class), _owl_name(value), prop_name))
     
 def _class_relation_2_rdflib(Class, Prop, prop_name, functional, value, g):
     if not functional:
         for val in value: _class_relation_2_rdflib(Class, Prop, prop_name, 1, val, g)
     elif not value is None:
-        g.add((URIref2(_n3_name(Class)),URIref2(prop_name),URIref2(_n3_name(value))))
+        g.add((URIref2(_n3_name(Class)), URIref2(prop_name), URIref2(_n3_name(value))))
 
     
 def _class_relation_2_python(prop_name, functional, value, f, need_pass):
@@ -925,7 +939,7 @@ def _class_relation_2_python(prop_name, functional, value, f, need_pass):
 
 
 class ThingClass(EntityClass):
-  def __init__(Class, name, bases, obj_dict, ontology = None):
+  def __init__(Class, name, bases, obj_dict, ontology=None):
     super().__init__(name, bases, obj_dict)
     Class._direct_instances = weakref.WeakSet()
     
@@ -959,14 +973,14 @@ class ThingClass(EntityClass):
        content.write('''<AnnotationAssertion>%s<IRI>%s%s%s</IRI>%s</AnnotationAssertion>\n''' % (_owl_name(AProp), Class.ontology.base_iri, Class.owl_separator, Class.name, _owl_name(value, lang)))
     content.write("\n")
     
-  def _class_to_rdflib(Class,g):
-    cl = URIref2("%s"% _n3_name(Class))
+  def _class_to_rdflib(Class, g):
+    cl = URIref2("%s" % _n3_name(Class))
     g.add((cl, rdflib.RDF.type, rdflib.OWL.Class))
     _class_relation_2_rdflib(Class, owl.is_a         , "rdfs:subClassOf"    , 0, [Parent for Parent in Class.is_a if (not Parent in _IGNORED_ISA) and (isinstance(Parent, EntityClass) or isinstance(Parent, Restriction))], g)
     _class_relation_2_rdflib(Class, owl.equivalent_to, "owl:equivalentClass", 0, Class.equivalent_to, g)
    
     for AProp, value, lang in ANNOTATIONS[Class].items():
-        g.add((cl,URIref2("%s"% _n3_name(AProp)),rdflib.Literal(value,lang)))
+        g.add((cl, URIref2("%s" % _n3_name(AProp)), rdflib.Literal(value, lang)))
       
   def _get_class_possible_relations(Class):
     Props = []
@@ -989,7 +1003,7 @@ class ThingClass(EntityClass):
   # Role-fillers as class properties
 
   def _get_prop_for_self(self, attr):
-    Prop = PROPS.get(attr)
+    Prop = PROPS[attr]
     if Prop is None: raise AttributeError("'%s' property is not defined." % attr)
     for domain in Prop.domain:
       if not domain._satisfied_by(self): raise AttributeError("'%s' property has incompatible domain for %s." % (Prop, self))
@@ -1014,9 +1028,9 @@ class ThingClass(EntityClass):
     else:                        Inverse = Prop.inverse_property
     
     previous = set(old)
-    news     = set(new)
+    news = set(new)
     removed = previous - news
-    added   = news - previous
+    added = news - previous
     for r in list(_ancestor_property_value_restrictions(self, Prop)):
       if (r.type == VALUE):
         if (r.Class in removed) and (r in self.is_a):
@@ -1035,11 +1049,11 @@ class ThingClass(EntityClass):
       super().__setattr__(attr, value)
       return
     
-    Prop       = self._get_prop_for_self(attr)
+    Prop = self._get_prop_for_self(attr)
     functional = Prop.is_functional_for(self)
     
     if functional:
-      if value is None: self._on_class_prop_changed([],      Prop, getattr(self, attr) or [])
+      if value is None: self._on_class_prop_changed([], Prop, getattr(self, attr) or [])
       else:             self._on_class_prop_changed([value], Prop, getattr(self, attr) or [])
     else:
       self._on_class_prop_changed(value, Prop, getattr(self, attr))
@@ -1055,16 +1069,16 @@ class ThingClass(EntityClass):
     
   
 class PropertyClass(EntityClass):
-  def __init__(Prop, name, bases, obj_dict, ontology = None):
+  def __init__(Prop, name, bases, obj_dict, ontology=None):
     super().__init__(name, bases, obj_dict)
-    #Prop.python_name = name
-    if not "domain"           in obj_dict: Prop.domain           = []
-    if not "range"            in obj_dict: Prop.range            = []
+    # Prop.python_name = name
+    if not "domain"           in obj_dict: Prop.domain = []
+    if not "range"            in obj_dict: Prop.range = []
     if not "inverse_property" in obj_dict: EntityClass.__setattr__(Prop, "inverse_property", None)
     else:                                  EntityClass.__setattr__(Prop.inverse_property, "inverse_property", Prop)
     Prop.indexes = {}
 
-  def create_index(Prop, Class = None):
+  def create_index(Prop, Class=None):
     Prop.indexes[Class] = d = {}
     prop_python_name = Prop.get_python_name()
     for instance in Class.instances():
@@ -1088,9 +1102,9 @@ class PropertyClass(EntityClass):
     if attr == "inverse_property":
       if value is None:
         if Prop.inverse_property: EntityClass.__setattr__(Prop.inverse_property, "inverse_property", None)
-        EntityClass.__setattr__(Prop,  "inverse_property", None)
+        EntityClass.__setattr__(Prop, "inverse_property", None)
       else:
-        EntityClass.__setattr__(Prop,  "inverse_property", value)
+        EntityClass.__setattr__(Prop, "inverse_property", value)
         EntityClass.__setattr__(value, "inverse_property", Prop)
     else:
       EntityClass.__setattr__(Prop, attr, value)
@@ -1108,15 +1122,15 @@ class PropertyClass(EntityClass):
     if Prop._is_data_property(): type = "Data"
     else:                        type = "Object"
     definition.write("""<Declaration>%s</Declaration>\n""" % _owl_name(Prop))
-    _class_relation_2_owl(Prop, owl.is_a         , "Sub%sPropertyOf"        % type, 0, [Parent for Parent in Prop.is_a if (not Parent in _IGNORED_ISA) and (isinstance(Parent, EntityClass) or isinstance(Parent, Restriction))], content)
+    _class_relation_2_owl(Prop, owl.is_a         , "Sub%sPropertyOf" % type, 0, [Parent for Parent in Prop.is_a if (not Parent in _IGNORED_ISA) and (isinstance(Parent, EntityClass) or isinstance(Parent, Restriction))], content)
     _class_relation_2_owl(Prop, owl.equivalent_to, "Equivalent%sProperties" % type, 0, Prop.equivalent_to   , content)
-    _class_relation_2_owl(Prop, None             , "Inverse%sProperties"    % type, 1, Prop.inverse_property, content)
-    _class_relation_2_owl(Prop, owl.domain       , "%sPropertyDomain"       % type, 0, Prop.domain          , content)
-    _class_relation_2_owl(Prop, owl.range        , "%sPropertyRange"        % type, 0, Prop.range           , content)
+    _class_relation_2_owl(Prop, None             , "Inverse%sProperties" % type, 1, Prop.inverse_property, content)
+    _class_relation_2_owl(Prop, owl.domain       , "%sPropertyDomain" % type, 0, Prop.domain          , content)
+    _class_relation_2_owl(Prop, owl.range        , "%sPropertyRange" % type, 0, Prop.range           , content)
     for Class in Prop.indexes:
       content.write('''<HasKey>''')
       for AProp, annot_value, lang in ANNOTATIONS[Prop, "indexes", Class].items():
-        f.write('''\n<Annotation>%s%s</Annotation>\n''' % (_owl_name(AProp), _owl_name(annot_value, lang)))
+        content.write('''\n<Annotation>%s%s</Annotation>\n''' % (_owl_name(AProp), _owl_name(annot_value, lang)))
       content.write('''%s%s</HasKey>\n''' % (_owl_name(Class), _owl_name(Prop)))
     for AProp, value, lang in ANNOTATIONS[Prop].items():
       content.write('''<AnnotationAssertion>%s<IRI>%s%s%s</IRI>%s</AnnotationAssertion>\n''' % (_owl_name(AProp), Prop.ontology.base_iri, Prop.owl_separator, Prop.name, _owl_name(value, lang)))
@@ -1129,7 +1143,7 @@ class PropertyClass(EntityClass):
     _class_relation_2_n3(Prop, None             , "owl:inverseOf"         , 1, Prop.inverse_property, content)
     _class_relation_2_n3(Prop, owl.domain       , "rdfs:domain"           , 0, Prop.domain          , content)
     _class_relation_2_n3(Prop, owl.range        , "rdfs:range"            , 0, Prop.range           , content)
-    #for Class in Prop.indexes:
+    # for Class in Prop.indexes:
     #  content.write('''<HasKey>''')
     #  for AProp, annot_value, lang in ANNOTATIONS[Prop, "indexes", Class].items():
     #    f.write('''\n<Annotation>%s%s</Annotation>\n''' % (_owl_name(AProp), _owl_name(annot_value, lang)))
@@ -1139,18 +1153,18 @@ class PropertyClass(EntityClass):
     content.write("\n")
     
   def _class_to_rdflib(Prop, g):
-    g.add((URIref2("%s"% _n3_name(Prop)), rdflib.RDF.type,rdflib.RDF.Property))
+    g.add((URIref2("%s" % _n3_name(Prop)), rdflib.RDF.type, rdflib.RDF.Property))
     _class_relation_2_rdflib(Prop, owl.is_a         , "rdfs:subPropertyOf"    , 0, [Parent for Parent in Prop.is_a if (not Parent in _IGNORED_ISA) and (isinstance(Parent, EntityClass) or isinstance(Parent, Restriction))], g)
     _class_relation_2_rdflib(Prop, owl.equivalent_to, "owl:equivalentProperty", 0, Prop.equivalent_to   , g)
     _class_relation_2_rdflib(Prop, None             , "owl:inverseOf"         , 1, Prop.inverse_property, g)
     _class_relation_2_rdflib(Prop, owl.domain       , "rdfs:domain"           , 0, Prop.domain          , g)
     _class_relation_2_rdflib(Prop, owl.range        , "rdfs:range"            , 0, Prop.range           , g)
-    #for Class in Prop.indexes:
+    # for Class in Prop.indexes:
     #  content.write('''<HasKey>''')
     #  for AProp, annot_value, lang in ANNOTATIONS[Prop, "indexes", Class].items():
     #    f.write('''\n<Annotation>%s%s</Annotation>\n''' % (_owl_name(AProp), _owl_name(annot_value, lang)))
     #  content.write('''%s%s</HasKey>\n''' % (_owl_name(Class), _owl_name(Prop)))
-    #for AProp, value, lang in ANNOTATIONS[Prop].items():
+    # for AProp, value, lang in ANNOTATIONS[Prop].items():
     #  content.write('''<AnnotationAssertion>%s<IRI>%s%s%s</IRI>%s</AnnotationAssertion>\n''' % (_owl_name(AProp), Prop.ontology.base_iri, Prop.owl_separator, Prop.name, _owl_name(value, lang)))
         
   def domains_indirect(self):
@@ -1159,14 +1173,14 @@ class PropertyClass(EntityClass):
       if isinstance(parent_prop, PropertyClass):
         for domain in parent_prop.domain: yield domain
         
-  def __call__(self, type, Class, c = None): return PropertyValueRestriction(self, type, Class, c)
+  def __call__(self, type, Class, c=None): return PropertyValueRestriction(self, type, Class, c)
   
 class AnnotationPropertyClass(EntityClass):
-  def __init__(Prop, name, bases, obj_dict, ontology = None):
+  def __init__(Prop, name, bases, obj_dict, ontology=None):
     super().__init__(name, bases, obj_dict)
-    #Prop.python_name = name
-    if not "domain" in obj_dict: Prop.domain           = []
-    if not "range"  in obj_dict: Prop.range            = []
+    # Prop.python_name = name
+    if not "domain" in obj_dict: Prop.domain = []
+    if not "range"  in obj_dict: Prop.range = []
     
   def get_python_name(self):
     python_names = ANNOTATIONS[self]["python_name"]
@@ -1185,23 +1199,23 @@ class AnnotationPropertyClass(EntityClass):
     
   def domains_indirect(self):
     for domain in self.domain: yield domain
-    for parent_prop in self.is_a:
-      if isinstance(parent_prop, PropertyAnnotationClass):
-        for domain in parent_prop.domain: yield domain
+    # for parent_prop in self.is_a:
+    #  if isinstance(parent_prop, PropertyAnnotationClass):
+    #    for domain in parent_prop.domain: yield domain
 
-_SPECIAL_ATTRS = {"ontology",  "name", "_name", "owl_separator", "is_a", "_old_is_a", "equivalent_to", "_direct_instances", "__class__", "__module__", "__doc__", "__bases__" }
+_SPECIAL_ATTRS = {"ontology", "name", "_name", "owl_separator", "is_a", "_old_is_a", "equivalent_to", "_direct_instances", "__class__", "__module__", "__doc__", "__bases__" }
 
-class Thing(metaclass = ThingClass):
+class Thing(metaclass=ThingClass):
   owl_separator = "#"
-  ontology      = owl
-  name          = _NameDescriptor()
+  ontology = owl
+  name = _NameDescriptor()
   
-  def __init__(self, name = None, ontology = None, label= None,**kargs):
+  def __init__(self, name=None, ontology=None, label=None, uri=None, **kargs):
     if (ontology is None) and DEFAULT_ONTOLOGY: ontology = DEFAULT_ONTOLOGY
     if not ontology is None: self.ontology = ontology
-    #DW
+    # DW
     if label is not None:
-         ANNOTATIONS[self].add_annotation(rdfs.label,label)
+         ANNOTATIONS[self].add_annotation(rdfs.label, label)
     
     if isinstance(self.__class__, _FusionClass):
       self.__dict__["is_a"] = _CallbackList(self.__class__.__bases__, self, "_instance_is_a_changed", "isa")
@@ -1211,8 +1225,13 @@ class Thing(metaclass = ThingClass):
       setattr(self, attr, value)
     for superclass in self.is_a: superclass._direct_instances.add(self)
     if not isinstance(self, GeneratedName):
-      if name: self.name = _unique_name(self, name)
-      else:    self.name = self.generate_default_name()
+      if uri: 
+          self.name = uri.replace(self.ontology.base_iri, "")
+          
+      else: 
+          if name: self.name = _unique_name(self, name)
+          else:    self.name = self.generate_default_name()
+          
     self.ontology.add(self)
     
   def _get_is_instance_of(self):    return self.is_a
@@ -1220,29 +1239,29 @@ class Thing(metaclass = ThingClass):
   is_instance_of = property(_get_is_instance_of, _set_is_instance_of)
   
   def generate_default_name(self):
-    Class  = self.is_a[0]
+    Class = self.is_a[0]
     return _unique_name(self, Class.name.lower(), True)
   
   def _instance_is_a_changed(self, is_a, Prop, old):
     for superclass in old:
       if isinstance(superclass, ThingClass): superclass._direct_instances.discard(self)
     if Thing in self.is_a: self.is_a._remove(Thing)
-    #if not self.is_a: self.is_a._set([Thing])
+    # if not self.is_a: self.is_a._set([Thing])
     bases = [base for base in self.is_a if not isinstance(base, Restriction)]
     if   not bases:
       self.is_a._set([Thing] + self.is_a)
       self.__class__ = Thing
     elif len(bases) == 1:
       self.__class__ = bases[0]
-    else: # Multi-class object
+    else:  # Multi-class object
       self.__class__ = _FusionClass._get_fusion_class(*bases)
     for superclass in self.is_a:
       if isinstance(superclass, ThingClass): superclass._direct_instances.add(self)
       
-  #def _get_relations(self): return { relation for relation in self.__dict__.keys() if (not relation in _SPECIAL_ATTRS) and (not relation.startswith("_")) }
+  # def _get_relations(self): return { relation for relation in self.__dict__.keys() if (not relation in _SPECIAL_ATTRS) and (not relation.startswith("_")) }
   def _get_relations(self): return { relation for relation in self.__dict__.keys() if (not relation in _SPECIAL_ATTRS) and relation in PROPS }
   
-  def _get_instance_possible_relations(self, ignore_domainless_properties = False):
+  def _get_instance_possible_relations(self, ignore_domainless_properties=False):
     Props = []
     for Prop in PROPS.values():
       if Prop in _HIDDEN_PROPS: continue
@@ -1298,22 +1317,22 @@ class Thing(metaclass = ThingClass):
     
     
   def _instance_to_rdflib(self, g):
-    g.add((URIref2("%s"% _n3_name(self)),rdflib.RDF.type, rdflib.OWL.Thing))
+    g.add((URIref2("%s" % _n3_name(self)), rdflib.RDF.type, rdflib.OWL.Thing))
     
     for Class in self.is_a:
-      g.add((URIref2("%s"%_n3_name(self)),rdflib.RDF.type,URIref2("%s"% _n3_name(Class))))
-      #for AProp, annot_value, lang in ANNOTATIONS[self, owl.is_a, Class].items():
+      g.add((URIref2("%s" % _n3_name(self)), rdflib.RDF.type, URIref2("%s" % _n3_name(Class))))
+      # for AProp, annot_value, lang in ANNOTATIONS[self, owl.is_a, Class].items():
       #  content.write('''\n<Annotation>%s%s</Annotation>\n''' % (_owl_name(AProp), _owl_name(annot_value, lang)))
       
     for attr in self._get_relations():
       Prop = PROPS[attr]
       _instance_relation_2_rdflib(self, Prop, self.__dict__[attr], g)
       
-    #for AProp, value, lang in ANNOTATIONS[self].items():
+    # for AProp, value, lang in ANNOTATIONS[self].items():
     #  content.write('''<AnnotationAssertion>%s<IRI>%s%s%s</IRI>%s</AnnotationAssertion>\n''' % (_owl_name(AProp), self.ontology.base_iri, self.owl_separator, self.name, _owl_name(value, lang)))
     for AProp, value, lang in ANNOTATIONS[self].items():
        
-        g.add((URIref2("%s"% _n3_name(self)),URIref2("%s"% _n3_name(AProp)),rdflib.Literal(value,lang)))
+        g.add((URIref2("%s" % _n3_name(self)), URIref2("%s" % _n3_name(AProp)), rdflib.Literal(value, lang)))
      
     
   def _instance_to_n3(self, definition, content):
@@ -1321,7 +1340,7 @@ class Thing(metaclass = ThingClass):
     
     for Class in self.is_a:
       content.write("%s a %s.\n" % (_n3_name(self), _n3_name(Class)))
-      #for AProp, annot_value, lang in ANNOTATIONS[self, owl.is_a, Class].items():
+      # for AProp, annot_value, lang in ANNOTATIONS[self, owl.is_a, Class].items():
       #  content.write('''\n<Annotation>%s%s</Annotation>\n''' % (_owl_name(AProp), _owl_name(annot_value, lang)))
       
     for attr in self._get_relations():
@@ -1332,12 +1351,12 @@ class Thing(metaclass = ThingClass):
         content.write('''<AnnotationAssertion>%s<IRI>%s%s%s</IRI>%s</AnnotationAssertion>\n''' % (_owl_name(AProp), self.ontology.base_iri, self.owl_separator, self.name, _owl_name(value, lang)))
     content.write("\n")
     
-  def __attrs__(self): # Not Python standard, but used by EditObj
+  def __attrs__(self):  # Not Python standard, but used by EditObj
     import owlready.editor
     return { prop.python_name for prop in self._get_instance_possible_relations(owlready.editor.IGNORE_DOMAINLESS_PROPERTY) } | self.__dict__.keys()
     
   def __getattr__(self, attr):
-    Prop = PROPS.get(attr)
+    Prop = PROPS[attr]
     if Prop is None:
       try:    repr_self = repr(self)
       except: repr_self = "<instance of %s>" % self.__class__
@@ -1351,7 +1370,7 @@ class Thing(metaclass = ThingClass):
     if Prop.is_functional_for(self): value = Prop.get_default_value(self)
     else:                            value = []
     setattr(self, attr, value)
-    return getattr(self, attr) # __setattr__ may change the value, so we need to get it again
+    return getattr(self, attr)  # __setattr__ may change the value, so we need to get it again
   
   def __setattr__(self, attr, value):
     if attr in _SPECIAL_ATTRS:
@@ -1360,9 +1379,12 @@ class Thing(metaclass = ThingClass):
       else:
         object.__setattr__(self, attr, value)
     else:
-      Prop = PROPS.get(attr)
+      Prop = PROPS[attr]
       if Prop:
-        old_value = self.__dict__.get(attr, None)
+        try:
+            old_value = self.__dict__[attr]
+        except KeyError:
+            old_value = None
         if Prop.is_functional_for(self):
           if Prop.inverse_property:
             if not old_value is None: del_relation(old_value, Prop.inverse_property, self)
@@ -1394,7 +1416,7 @@ class Thing(metaclass = ThingClass):
     for added   in new - old:
       add_relation(added, Prop.inverse_property, self)
       
-  def closed_world(self, Properties = None): close_world(self, Properties) # For backward compatibility
+  def closed_world(self, Properties=None): close_world(self, Properties)  # For backward compatibility
 
 
 
@@ -1404,9 +1426,9 @@ def has_relation(subject, Prop, object):
   else:                               return object in getattr(subject, Prop.python_name)
   
 def _ancestor_property_value_restrictions(clazz, Prop):
-  #DW
+  # DW
   return None
-  for restrict in (clazz.is_a + clazz.equivalent_to ):
+  for restrict in (clazz.is_a + clazz.equivalent_to):
     x = isinstance(restrict, PropertyValueRestriction)      
     if x:
         y = restrict.Prop is Prop
@@ -1414,7 +1436,7 @@ def _ancestor_property_value_restrictions(clazz, Prop):
             yield restrict
     if isinstance(restrict, AndRestriction):
       for clazz2 in restrict.Classes: yield from _ancestor_property_value_restrictions(clazz2, Prop)
-    #TODO Check this without this restriction i fet an infinit loop - after running hermit
+    # TODO Check this without this restriction i fet an infinit loop - after running hermit
    
     elif isinstance(restrict, EntityClass): 
             
@@ -1448,10 +1470,10 @@ def del_relation(subject, Prop, object):
     if object in values: values.remove(object)
     
     
-class Property(metaclass = PropertyClass):
+class Property(metaclass=PropertyClass):
   owl_separator = "#"
-  ontology      = owl
-  name          = _NameDescriptor()
+  ontology = owl
+  name = _NameDescriptor()
   
   @classmethod
   def get_default_value(Prop, instance):
@@ -1469,9 +1491,9 @@ class Property(metaclass = PropertyClass):
     return None
     
   @classmethod
-  def is_functional_for(Prop, o): # o can be a Class or an Instance
+  def is_functional_for(Prop, o):  # o can be a Class or an Instance
     # XXX cache the results
-    ranges  = set(Prop.range)
+    ranges = set(Prop.range)
     singles = set()
     for restrict in _ancestor_property_value_restrictions(o, Prop):
       if     restrict.type == ONLY:
@@ -1492,15 +1514,15 @@ class ReflexiveProperty        (Property): pass
 class IrreflexiveProperty      (Property): pass
 
 
-class AnnotationProperty(metaclass = AnnotationPropertyClass):
+class AnnotationProperty(metaclass=AnnotationPropertyClass):
   owl_separator = "#"
-  ontology      = owl
-  name          = _NameDescriptor()
+  ontology = owl
+  name = _NameDescriptor()
   
   @classmethod
   def is_functional_for(Prop, o): return False
 
-def _create_base_properties(): # In a func to avoid polluting the module with global names like "label"
+def _create_base_properties():  # In a func to avoid polluting the module with global names like "label"
   class backwardCompatibleWith(AnnotationProperty): ontology = owl
   class comment               (AnnotationProperty): ontology = rdfs
   class deprecated            (AnnotationProperty): ontology = owl
@@ -1537,33 +1559,33 @@ _PYTHON_2_DATATYPES = {
 
 _DATATYPES_2_PYTHON = { val : key for (key, val) in _PYTHON_2_DATATYPES.items() }
 _DATATYPES_2_PYTHON["http://www.w3.org/1999/02/22-rdf-syntax-ns#PlainLiteral"] = str
-_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#byte"]                   = int
-_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#short"]                  = int
-_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#int"]                    = int
-_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#long"]                   = int
-_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#unsignedByte"]           = int
-_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#unsignedShort"]          = int
-_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#unsignedInt"]            = int
-_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#unsignedLong"]           = int
-_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#negativeInteger"]        = int
-_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#nonNegativeInteger"]     = int
-_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#nonPositiveInteger"]     = int
-_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#positiveInteger"]        = int
-_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#double"]                 = float
-_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#float"]                  = float
-_DATATYPES_2_PYTHON["http://www.w3.org/2002/07/owl#real"]                      = float
-_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#anyURI"]                 = normstr
-_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#Name"]                   = normstr
-_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#date"]                   = datetime.date
-_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#time"]                   = datetime.time
-_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#dateTime"]               = datetime.datetime
-#_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#duration"]               = datetime.timedelta
+_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#byte"] = int
+_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#short"] = int
+_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#int"] = int
+_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#long"] = int
+_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#unsignedByte"] = int
+_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#unsignedShort"] = int
+_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#unsignedInt"] = int
+_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#unsignedLong"] = int
+_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#negativeInteger"] = int
+_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#nonNegativeInteger"] = int
+_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#nonPositiveInteger"] = int
+_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#positiveInteger"] = int
+_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#double"] = float
+_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#float"] = float
+_DATATYPES_2_PYTHON["http://www.w3.org/2002/07/owl#real"] = float
+_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#anyURI"] = normstr
+_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#Name"] = normstr
+_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#date"] = datetime.date
+_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#time"] = datetime.time
+_DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#dateTime"] = datetime.datetime
+# _DATATYPES_2_PYTHON["http://www.w3.org/2001/XMLSchema#duration"]               = datetime.timedelta
 
 if pyxb:
   for datatype in pyxb.binding.datatypes._PrimitiveDatatypes + pyxb.binding.datatypes._DerivedDatatypes:
     datatype_name = "http://www.w3.org/2001/XMLSchema#%s" % datatype.__name__
-    if datatype_name in _DATATYPES_2_PYTHON: continue # Builtin / hardcoded datatype
-    _PYTHON_2_DATATYPES[datatype]      = datatype_name
+    if datatype_name in _DATATYPES_2_PYTHON: continue  # Builtin / hardcoded datatype
+    _PYTHON_2_DATATYPES[datatype] = datatype_name
     _DATATYPES_2_PYTHON[datatype_name] = datatype
     
 
@@ -1606,31 +1628,31 @@ def _owl_type_plural(self):
   elif isinstance(self, Thing):                   return """NamedIndividuals"""
   raise ValueError
   
-def _owl_name(self, lang = ""):
+def _owl_name(self, lang=""):
   if   self in _OWL_NAME: return _OWL_NAME[self]
   elif(isinstance(self, EntityClass) or
        isinstance(self, Thing) or isinstance(self, rdflib.URIRef)):      return """<%s IRI="%s%s%s"/>""" % (_owl_type(self), self.ontology.base_iri, self.owl_separator, escape(self.name))
   elif isinstance(self, Restriction): return self._restriction_to_owl()
   elif isinstance(self, bool):        return """<Literal datatypeIRI="&xsd;boolean">%s</Literal>""" % self
-  elif isinstance(self, int):         return """<Literal datatypeIRI="&xsd;integer">%s</Literal>"""     % self
-  elif isinstance(self, float):       return """<Literal datatypeIRI="&xsd;decimal">%s</Literal>"""   % self
-  elif isinstance(self, normstr):     return """<Literal datatypeIRI="&xsd;normalizedString"%s>%s</Literal>"""  % ((' xml:lang="%s"' % lang) if lang else "", escape(self))
-  elif isinstance(self, str):         return """<Literal datatypeIRI="&xsd;string"%s>%s</Literal>"""            % ((' xml:lang="%s"' % lang) if lang else "", escape(self))
-  elif isinstance(self, datetime.date):        return """<Literal datatypeIRI="&xsd;date">%s</Literal>"""  % self.isoformat()
-  elif isinstance(self, datetime.time):        return """<Literal datatypeIRI="&xsd;time">%s</Literal>"""  % self.isoformat()
-  elif isinstance(self, datetime.datetime):    return """<Literal datatypeIRI="&xsd;dateTime">%s</Literal>"""  % self.isoformat()
-  elif isinstance(self, datetime.timedelta):   return """<Literal datatypeIRI="&xsd;duration">P%sDT%sS</Literal>"""  % (self.days, self.seconds)
+  elif isinstance(self, int):         return """<Literal datatypeIRI="&xsd;integer">%s</Literal>""" % self
+  elif isinstance(self, float):       return """<Literal datatypeIRI="&xsd;decimal">%s</Literal>""" % self
+  elif isinstance(self, normstr):     return """<Literal datatypeIRI="&xsd;normalizedString"%s>%s</Literal>""" % ((' xml:lang="%s"' % lang) if lang else "", escape(self))
+  elif isinstance(self, str):         return """<Literal datatypeIRI="&xsd;string"%s>%s</Literal>""" % ((' xml:lang="%s"' % lang) if lang else "", escape(self))
+  elif isinstance(self, datetime.date):        return """<Literal datatypeIRI="&xsd;date">%s</Literal>""" % self.isoformat()
+  elif isinstance(self, datetime.time):        return """<Literal datatypeIRI="&xsd;time">%s</Literal>""" % self.isoformat()
+  elif isinstance(self, datetime.datetime):    return """<Literal datatypeIRI="&xsd;dateTime">%s</Literal>""" % self.isoformat()
+  elif isinstance(self, datetime.timedelta):   return """<Literal datatypeIRI="&xsd;duration">P%sDT%sS</Literal>""" % (self.days, self.seconds)
   raise ValueError(self)
   
-def _n3_name(self, lang = ""):
+def _n3_name(self, lang=""):
   if   self in _N3_NAME: return _N3_NAME[self]
   elif(isinstance(self, EntityClass) or
        isinstance(self, Thing)):      return """<%s%s%s>""" % (self.ontology.base_iri, self.owl_separator, escape(self.name))
   elif isinstance(self, Restriction): return self._restriction_to_n3()
-  elif isinstance(self,rdflib.URIRef): return self
+  elif isinstance(self, rdflib.URIRef): return self
   elif isinstance(self, bool):        return str(self).lower()
-  elif isinstance(self, int):         return  "%s"  % self
-  elif isinstance(self, float):       return  "%s"  % self
+  elif isinstance(self, int):         return  "%s" % self
+  elif isinstance(self, float):       return  "%s" % self
   elif isinstance(self, normstr):     return '"%s"' % escape(self)
   elif isinstance(self, str):         return '"%s"' % escape(self)
   raise ValueError(self)
@@ -1648,7 +1670,7 @@ _PYTHON_NAME = {
 def _python_name(x):
   if isinstance(x, list): return "[%s]" % ", ".join(_python_name(i) for i in x)
   if isinstance(x, Restriction): return repr(x)
-  return _PYTHON_NAME.get(x) or repr(x)
+  return _PYTHON_NAME[x] or repr(x)
 
 def _instance_relation_2_owl(obj, Prop, value, f):
   if (value is None) or (value == ""): return
@@ -1667,17 +1689,17 @@ def _instance_relation_2_rdflib(obj, Prop, value, g):
     for val in value: _instance_relation_2_rdflib(obj, Prop, val, g)
   else:
     
-    if len(Prop.range)==0:
-        g.add((URIref2("%s"%_n3_name(obj)),URIref2("%s"%_n3_name(Prop)),URIref2("%s"%_n3_name(value))))
+    if len(Prop.range) == 0:
+        g.add((URIref2("%s" % _n3_name(obj)), URIref2("%s" % _n3_name(Prop)), URIref2("%s" % _n3_name(value))))
     else:
-        for rangeCls in Prop.range: #gehe durch die Klassen im Range und Teste zu welcer value gehört  
+        for rangeCls in Prop.range:  # gehe durch die Klassen im Range und Teste zu welcer value gehört  
             if isinstance(rangeCls, ThingClass):
-                g.add((URIref2("%s"%_n3_name(obj)),URIref2("%s"%_n3_name(Prop)),URIref2("%s"%_n3_name(value))))
-            else: #assume is literal
-                g.add((URIref2("%s"%_n3_name(obj)),URIref2("%s"%_n3_name(Prop)),rdflib.Literal(rangeCls(value))))
+                g.add((URIref2("%s" % _n3_name(obj)), URIref2("%s" % _n3_name(Prop)), URIref2("%s" % _n3_name(value))))
+            else:  # assume is literal
+                g.add((URIref2("%s" % _n3_name(obj)), URIref2("%s" % _n3_name(Prop)), rdflib.Literal(rangeCls(value))))
                 
      
-    #for AProp, annot_value, lang in ANNOTATIONS[obj, Prop, value].items():
+    # for AProp, annot_value, lang in ANNOTATIONS[obj, Prop, value].items():
     #  f.write('''\n<Annotation>%s%s</Annotation>\n''' % (_owl_name(AProp), _owl_name(annot_value, lang)))
     
 
@@ -1687,10 +1709,10 @@ def _instance_relation_2_n3(obj, Prop, value, f):
     for val in value: _instance_relation_2_n3(obj, Prop, val, f)
   else:
     f.write("%s %s %s.\n" % (_n3_name(obj), _n3_name(Prop), _n3_name(value)))
-    #for AProp, annot_value, lang in ANNOTATIONS[obj, Prop, value].items():
+    # for AProp, annot_value, lang in ANNOTATIONS[obj, Prop, value].items():
     #  f.write('''\n<Annotation>%s%s</Annotation>\n''' % (_owl_name(AProp), _owl_name(annot_value, lang)))
     
-def NOT(x): return ~ x
+def NOT(x): return ~x
 
 class Restriction(object):
   def __and__ (a, b): return AndRestriction(a, b)
@@ -1715,7 +1737,7 @@ class OneOfRestriction(Restriction):
   def _restriction_to_owl(self):
     return """\n<ObjectOneOf>%s</ObjectOneOf>""" % "".join(_owl_name(instance) for instance in self.instances)
 
- #todo restrictions in rdflib
+ # todo restrictions in rdflib
   def _restriction_to_rdflib(self):
      return
  
@@ -1740,7 +1762,7 @@ class OperatorRestriction(Restriction):
   def _refered_object(self, l):
     for Class in self.Classes: Class._refered_object(l)
 
-  #todo restrictions in rdflib
+  # todo restrictions in rdflib
   def _restriction_to_rdflib(self):
       return
 
@@ -1756,9 +1778,9 @@ class OperatorRestriction(Restriction):
   def __repr__(self): return "(%s)" % self._PYTHON_OP.join(_python_name(c) for c in self.Classes)
 
 class OrRestriction(OperatorRestriction):
-  _PYTHON_OP       = " | "
-  _OWL_TAG         = "UnionOf"
-  _N3_TAG          = "owl:unionOf"
+  _PYTHON_OP = " | "
+  _OWL_TAG = "UnionOf"
+  _N3_TAG = "owl:unionOf"
   
   def __init__(self, *Classes):
     if len(Classes) < 2: raise ValueError("Need at least 2 elements for OR!")
@@ -1770,9 +1792,9 @@ class OrRestriction(OperatorRestriction):
     return 0
 
 class AndRestriction(OperatorRestriction):
-  _PYTHON_OP       = " & "
-  _OWL_TAG         = "IntersectionOf"
-  _N3_TAG          = "owl:intersectionOf"
+  _PYTHON_OP = " & "
+  _OWL_TAG = "IntersectionOf"
+  _N3_TAG = "owl:intersectionOf"
   
   def __init__(self, *Classes):
     if len(Classes) < 2: raise ValueError("Need at least 2 elements for AND!")
@@ -1796,7 +1818,7 @@ class NotRestriction(OperatorRestriction):
   def _restriction_to_owl(self):
     return "\n<ObjectComplementOf>%s</ObjectComplementOf>" % _owl_name(self.Class)
 
-  #todo restrictions in rdflib
+  # todo restrictions in rdflib
   def _restriction_to_rdflib(self):
       return
     
@@ -1807,26 +1829,26 @@ class NotRestriction(OperatorRestriction):
   
   def __repr__(self): return "NOT(%s)" % (self.Class)
   
-SOME    = "SOME"
-ONLY    = "ONLY"
-#EVERY   = "EVERY"
+SOME = "SOME"
+ONLY = "ONLY"
+# EVERY   = "EVERY"
 EXACTLY = "EXACTLY"
-MIN     = "MIN"
-MAX     = "MAX"
-VALUE   = "VALUE"
+MIN = "MIN"
+MAX = "MAX"
+VALUE = "VALUE"
 class PropertyValueRestriction(Restriction):
-  def __init__(self, Prop, type, Class, c = None):
+  def __init__(self, Prop, type, Class, c=None):
     super().__init__()
     if not c is None:
       self.cardinality = Class
-      self.Class       = c
+      self.Class = c
     else:
       self.Class = Class
       
     if isinstance(Prop, str): Prop = PROPS[Prop]
     
-    self.Prop  = Prop
-    self.type  = type
+    self.Prop = Prop
+    self.type = type
     
     if type == VALUE:
       if isinstance(self.Class, Restriction) or isinstance(self.Class, ThingClass): raise ValueError("VALUE restriction expects an instance!")
@@ -1836,7 +1858,7 @@ class PropertyValueRestriction(Restriction):
   def _owl_object_type(self): return _owl_object_type(self.Prop)
   
   def _satisfied_by(self, x):
-    if isinstance(x, EntityClass): return 1 # XXX not doable on classes
+    if isinstance(x, EntityClass): return 1  # XXX not doable on classes
     
     if   self.type == "SOME":
       for obj in get_relations(x, self.Prop):
@@ -1877,7 +1899,7 @@ class PropertyValueRestriction(Restriction):
     s += """</%s%s>""" % (prop_type, _TYPE_2_TAG[self.type])
     return s
     
-#todo restrictions in rdflib
+# todo restrictions in rdflib
   def _restriction_to_rdflib(self):
       return
 
@@ -1917,7 +1939,7 @@ _TYPE_2_N3_TAG = {
   }
 
 
-def _keep_most_specific(s, consider_equivalence = True):
+def _keep_most_specific(s, consider_equivalence=True):
   if consider_equivalence:
     testsubclass = issubclass
   else:
@@ -1935,15 +1957,15 @@ def _keep_most_specific(s, consider_equivalence = True):
 _RULE_REGEXP = re.compile("<DLSafeRule>.*?</DLSafeRule>", re.MULTILINE | re.DOTALL)
 class Rules(object):
   def __init__(self, base_iri):
-    #self.filename = filename
-    #if not os.path.isabs(self.filename):
+    # self.filename = filename
+    # if not os.path.isabs(self.filename):
     #  for dir in onto_path:
     #    filename = os.path.join(dir, self.filename)
     #    if os.path.exists(filename):
     #      self.filename = filename
     #      break
     self.base_iri = base_iri
-    self.name     = base_iri.rsplit("/", 1)[-1]
+    self.name = base_iri.rsplit("/", 1)[-1]
     if self.name.endswith(".owl"): self.name = self.name[:-4]
         
   def __repr__(self): return 'Rules("%s")' % self.base_iri
@@ -1982,9 +2004,9 @@ class Annotationss():
 
 class Annotations(object):
   def __init__(self, obj):
-    self.obj    = obj
+    self.obj = obj
     self.values = {}
-    self.langs  = {}
+    self.langs = {}
     
   def __len__(self):
     l = 0
@@ -1999,7 +2021,7 @@ class Annotations(object):
   def items(self):
     for prop in self.values:
       values = self.values[prop]
-      langs  = self.langs [prop]
+      langs = self.langs [prop]
       for i in range(len(values)): yield prop, values[i], langs[i]
   def __iter__(self): return self.values.__iter__()
       
@@ -2016,19 +2038,19 @@ class Annotations(object):
       
     return key, lang
     
-  def get_first(self, key, default = ""):
+  def get_first(self, key, default=""):
     annots = self[key]
     if annots: return annots[0]
     return default
   
   def __getitem__(self, key):
     key, lang = self._split_key_lang(key)
-    aprops    = list(key.descendant_subclasses())
+    aprops = list(key.descendant_subclasses())
     
     if len(aprops) == 1:
       if not lang: return self.values[key]
       values = self.values[key]
-      langs  = self.langs [key]
+      langs = self.langs [key]
       return [values[i] for i in range(len(values)) if langs[i] == lang]
     else:
       r = []
@@ -2039,13 +2061,13 @@ class Annotations(object):
         for key in aprops:
           if key in self.values:
             values = self.values[key]
-            langs  = self.langs [key]
+            langs = self.langs [key]
             r += [values[i] for i in range(len(values)) if langs[i] == lang]
       return r
       
   def __delitem__(self, key):
     key, lang = self._split_key_lang(key)
-    aprops    = list(key.descendant_subclasses())
+    aprops = list(key.descendant_subclasses())
     
     if not lang:
       for key in aprops:
@@ -2056,16 +2078,16 @@ class Annotations(object):
       for key in aprops:
         if key in self.values:
           values = self.values[key]
-          langs  = self.langs [key]
+          langs = self.langs [key]
           self.values[key] = [values[i] for i in range(len(values)) if langs[i] != lang]
-          self.langs [key] = [langs [i] for i in range(len(langs )) if langs[i] != lang]
+          self.langs [key] = [langs [i] for i in range(len(langs)) if langs[i] != lang]
           
   def __setitem__(self, key, value):
     key, lang = self._split_key_lang(key)
     if key is owlready_ontology.python_name: old_python_name = self.obj.python_name
     
     values = self.values[key]
-    langs  = self.langs [key]
+    langs = self.langs [key]
     for i in range(len(values)):
       if langs[i] == lang:
         values[i] = value
@@ -2092,7 +2114,7 @@ class Annotations(object):
     if key is owlready_ontology.python_name: old_python_name = self.obj.python_name
     
     values = self.values[key]
-    langs  = self.langs [key]
+    langs = self.langs [key]
     values.append(value)
     langs .append(lang)
     
@@ -2104,7 +2126,7 @@ class Annotations(object):
     key, lang = self._split_key_lang(key)
     
     values = self.values[key]
-    langs  = self.langs [key]
+    langs = self.langs [key]
     for i in range(len(values)):
       if (values[i] == value) and (langs[i] == lang):
         if key is owlready_ontology.python_name:
@@ -2134,21 +2156,21 @@ class _FusionClass(ThingClass):
   @staticmethod
   def _get_fusion_class(*Classes):
     if len(set(Classes)) == 1: return Classes[0]
-    Classes = tuple(sorted(Classes, key = lambda Class: Class.__name__))
+    Classes = tuple(sorted(Classes, key=lambda Class: Class.__name__))
     if Classes in _FusionClass._FUSION_CLASSES: return _FusionClass._FUSION_CLASSES[Classes]
 #    d = {}
 #    exec("""
-#class Fusion(%s):
+# class Fusion(%s):
 #  pass
 #    """ % (", ".join(Class.__name__ for Class in Classes)))
     name = " & ".join(Class.__name__ for Class in Classes) 
-    #fusion_class = _FusionClass._FUSION_CLASSES[Classes] = type.__new__(ThingClass, name, Classes, {})
+    # fusion_class = _FusionClass._FUSION_CLASSES[Classes] = type.__new__(ThingClass, name, Classes, {})
     fusion_class = _FusionClass._FUSION_CLASSES[Classes] = _FusionClass(name, Classes, { "ontology" : anonymous })
     return fusion_class
 
 
-def close_world(self, Properties = None, close_instance_list = True, recursive = True):
-  if isinstance(self, Thing): # An instance
+def close_world(self, Properties=None, close_instance_list=True, recursive=True):
+  if isinstance(self, Thing):  # An instance
     if Properties is None:
       Properties2 = (Prop for Prop in self._get_instance_possible_relations() if (not Prop._is_data_property()) and (not Prop in _HIDDEN_PROPS))
     else:
@@ -2166,7 +2188,7 @@ def close_world(self, Properties = None, close_instance_list = True, recursive =
       elif len(range_classes) == 1:              self.is_a.append(restriction(Prop, ONLY, range_classes[0]))
       else:                                      self.is_a.append(restriction(Prop, ONLY, OrRestriction(*range_classes)))
       
-  else: # A class
+  else:  # A class
     if close_instance_list:
       instances = list(self.instances())
       if instances: self.is_a.append(one_of(*instances))
@@ -2176,13 +2198,13 @@ def close_world(self, Properties = None, close_instance_list = True, recursive =
     else:
       Properties2 = Properties
       
-    instances  = set(self.instances())
+    instances = set(self.instances())
     subclasses = set(self.descendant_subclasses())
     
     for Prop in Properties2:
       range_instances = []
       range_classes = []
-      for subclass in subclasses: # subclasses includes self
+      for subclass in subclasses:  # subclasses includes self
         for r in _ancestor_property_value_restrictions(subclass, Prop):
           if   r.type is VALUE:
             range_instances.append(r.Class)

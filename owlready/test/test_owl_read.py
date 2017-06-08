@@ -2,7 +2,7 @@ import owlready
 
 
 owlready.onto_path.append("/Users/dwinter/ipython/notebooks-diss/20161124_relativity_analysis_ont_0.14/ontologies/")
-scholars_ontology = owlready.get_ontology("http://ontology.mpiwg-berlin.mpg.de/scholarlyRelations/scholars_ontology.owl")
+scholars_ontology = owlready.get_ontology("http://ontologies.mpiwg-berlin.mpg.de/scholarlyRelations/scholars_ontology.owl")
 #scholars_ontology.sync_reasoner()
 scholars_ontology.load()
 print("classes")
@@ -36,7 +36,7 @@ store = SPARQLUpdateStore(queryEndpoint="http://localhost:10214/blazegraph/sparq
                        )
 
 
-store.setNamespaceBindings({"ont":"http://ontology.mpiwg-berlin.mpg.de/scholarlyRelations",
+store.setNamespaceBindings({"ont":"http://ontologies.mpiwg-berlin.mpg.de/scholarlyRelations",
                           "end":"http://entity.mpiwg-berlin.mpg.de/modernPhysics"})
 
 
