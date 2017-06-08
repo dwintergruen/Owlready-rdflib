@@ -703,7 +703,10 @@ def _unique_name(instance, name, add_1=False):
     i = 2
     while 1:
       name = "%s_%s" % (base_name, i)
-      current = IRIS["%s%s%s" % (instance.ontology.base_iri, instance.owl_separator, name)]
+      try:
+          current = IRIS["%s%s%s" % (instance.ontology.base_iri, instance.owl_separator, name)]
+      except KeyError:
+          current = None
       if (current is None) or (current is instance): break
       i += 1
   return name
