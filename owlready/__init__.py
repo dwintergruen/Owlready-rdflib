@@ -5,9 +5,10 @@
 # University Paris 13, Sorbonne paris-Cité, Bobigny, France
 from eulxml.xmlmap.dc import rdflib
 from rdflib.term import URIRef
-from IPython.utils.sysinfo import sys_info
+#from IPython.utils.sysinfo import sys_info
 from lib2to3.fixer_util import Attr
 from cssselect.parser import Attrib
+from docutils.parsers.rst.directives import uri
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
@@ -25,7 +26,8 @@ from cssselect.parser import Attrib
 # modfied by DW
 # removed .get by [] because if performance issues
 VERSION = "0.3b"
-
+subClassCheck = {}
+subclasses = {}
 
 import sys, os, types, tempfile, subprocess, weakref, re, urllib.request, warnings
 from io import StringIO
@@ -377,7 +379,17 @@ class Ontology(object):
     return unreachables
     
   def instances_of (self, Class): return (instance for instance in self.instances if isinstance(instance, Class))
-  def subclasses_of(self, Class): return (klass    for klass    in self.classes   if issubclass(klass   , Class))
+  def subclasses_of(self, Class):
+    #return  (klass    for klass    in self.classes   if issubclass(klass   , Class))
+
+    try:
+      return subclasses[Class]
+    except:
+      pass
+
+    ret =  (klass    for klass    in self.classes   if issubclass(klass   , Class))
+    subclasses[Class] = list(ret)
+    return ret
   
   def get_object(self, iri, type=None, parser=None, base_iri=None):
     if base_iri is not None:
@@ -755,6 +767,7 @@ class EntityClass(type):
   ontology = owl
   name = _NameDescriptor()
   _name = "EntityClass"
+
   
   def __and__(a, b): return AndRestriction(a, b)
   def __or__ (a, b): return OrRestriction (a, b)
@@ -801,6 +814,7 @@ class EntityClass(type):
       if   issubclass(Class, Property):           PROPS      [name] = Class
       elif issubclass(Class, AnnotationProperty): ANNOT_PROPS[name] = Class
       ontology.add(Class)
+
     return Class
   
   def mro(Class):
@@ -819,9 +833,19 @@ class EntityClass(type):
     Class.__bases__ = Class.__bases__ + ()  # Force MRO recalculation
 
   def __subclasscheck__(Class, Subclass):
-    if type.__subclasscheck__(Class, Subclass): return True
+    try:
+      return subClassCheck[(Class, Subclass)]
+    except:
+      pass
+
+    if type.__subclasscheck__(Class, Subclass): 
+        subClassCheck[(Class, Subclass)] = True
+        return True
     for Equivalent in Class.equivalent_to:
-      if isinstance(Equivalent, EntityClass) and type.__subclasscheck__(Equivalent, Subclass): return True
+      if isinstance(Equivalent, EntityClass) and type.__subclasscheck__(Equivalent, Subclass): 
+        subClassCheck[(Class, Subclass)] = True
+        return True
+    subClassCheck[(Class, Subclass)] = False
     return False
   
   def __instancescheck__(Class, instance):
@@ -945,7 +969,8 @@ class ThingClass(EntityClass):
   def __init__(Class, name, bases, obj_dict, ontology=None):
     super().__init__(name, bases, obj_dict)
     Class._direct_instances = weakref.WeakSet()
-    
+      
+
   def instances(Class):
     for instance in Class._direct_instances: yield instance
     for subclass in Class.__subclasses__():
@@ -1206,7 +1231,7 @@ class AnnotationPropertyClass(EntityClass):
     #  if isinstance(parent_prop, PropertyAnnotationClass):
     #    for domain in parent_prop.domain: yield domain
 
-_SPECIAL_ATTRS = {"ontology", "name", "_name", "owl_separator", "is_a", "_old_is_a", "equivalent_to", "_direct_instances", "__class__", "__module__", "__doc__", "__bases__" }
+_SPECIAL_ATTRS = {"ontology", "name", "_name", "owl_separator", "is_a", "_old_is_a", "equivalent_to", "_direct_instances", "__class__", "__module__", "__doc__", "__bases__" ,"uri"}
 
 class Thing(metaclass=ThingClass):
   owl_separator = "#"
@@ -1648,6 +1673,14 @@ def _owl_name(self, lang=""):
   raise ValueError(self)
   
 def _n3_name(self, lang=""):
+    
+  try:
+      if self.uri is not None:
+          return self.uri
+  except AttributeError:
+      pass
+  except KeyError:
+      pass
   if   self in _N3_NAME: return _N3_NAME[self]
   elif(isinstance(self, EntityClass) or
        isinstance(self, Thing)):      return """<%s%s%s>""" % (self.ontology.base_iri, self.owl_separator, escape(self.name))
