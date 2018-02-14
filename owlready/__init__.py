@@ -304,7 +304,7 @@ class Ontology(object):
         self.loaded = False
         if self.base_iri in ONTOLOGIES: raise ValueError("An ontology named '%s' already exists!" % self.base_iri)
         ONTOLOGIES[self.base_iri] = IRIS[self.base_iri] = self
-        print("* Owlready * Creating new ontology %s <%s>." % (self.name, self.base_iri), file=sys.stderr)
+        print("* Owlready * Creating new ontology %s <%s>." % (self.name, self.base_iri))
         if (not base_iri.endswith(".owl")) and (not force_non_dot_owl_iri):
             warnings.warn("Ontology IRI '%s' does not ends with '.owl' as expected." % base_iri, OwlReadyOntologyIRIWarning, 3)
           
@@ -326,7 +326,7 @@ class Ontology(object):
         
     f = _open_onto_file(filepath, self.name, "r", only_local)
     self.loaded = True
-    print("* Owlready *     ...loading ontology %s from %s..." % (self.name, getattr(f, "name", "") or getattr(f, "url", "???")), file=sys.stderr)
+    print("* Owlready *     ...loading ontology %s from %s..." % (self.name, getattr(f, "name", "") or getattr(f, "url", "???")))
     import owlready.owl_xml_parser
 
     parsed = owlready.owl_xml_parser.parse(f, self)
@@ -339,7 +339,7 @@ class Ontology(object):
     owl = to_owl(self)
     if filename: f = open(filename, "w")
     else:        f = _open_onto_file(self.base_iri, self.name, "w")
-    print("* Owlready * Saving ontology %s to %s..." % (self.name, getattr(f, "name", "???")), file=sys.stderr)
+    print("* Owlready * Saving ontology %s to %s..." % (self.name, getattr(f, "name", "???")))
     f.write(owl)
     
   def add(self, o):
@@ -427,18 +427,19 @@ class Ontology(object):
     command = [JAVA_EXE, "-Xmx2000M", "-cp", _HERMIT_CLASSPATH, "org.semanticweb.HermiT.cli.CommandLine", "-c", "-O", "-D", "-I", "file:///%s" % tmp.name.replace('\\', '/')]
     if debug:
       import time
-      print("* Owlready * Running HermiT...", file=sys.stderr)
-      print("    %s" % " ".join(command), file=sys.stderr)
+      print("* Owlready * Running HermiT...")
+      print("    %s" % " ".join(command))
       t0 = time.time()
     output = subprocess.check_output(command)
     output = output.decode("utf8").replace("\r", "")
     if debug:
-      print("* Owlready * HermiT took %s seconds" % (time.time() - t0), file=sys.stderr)
+      print("* Owlready * HermiT took %s seconds" % (time.time() - t0))
       if debug > 1:
-        print("* Owlready * HermiT output:", file=sys.stderr)
-        print(output, file=sys.stderr)
-        
-    print(output, file=open("/tmp/sortie_hermit.txt", "w"))
+        print("* Owlready * HermiT output:")
+        print(output)
+    with open("/tmp/sortie_hermit.txt", "w") as outf:
+      outf.write(output)
+
         
     is_a_relations = {"SubClassOf", "SubObjectPropertyOf", "SubDataPropertyOf", "Type"}
     equiv_relations = {"EquivalentClasses", "EquivalentObjectProperties", "EquivalentDataProperties"}
@@ -467,14 +468,14 @@ class Ontology(object):
             concept = IRIS[concept_iri]
             if "http://www.w3.org/2002/07/owl#Nothing" in concepts:
               concept.equivalent_to.append(Nothing)
-              if debug: print("* Owlready * Equivalenting:", concept, "Nothing", file=sys.stderr)
+              if debug: print("* Owlready * Equivalenting:", concept, "Nothing")
               
             else:
               for other_concept_iri in concepts:
                 if concept_iri == other_concept_iri: continue
                 other_concept = IRIS[other_concept_iri]
                 concept.equivalent_to.append(other_concept)
-                if debug: print("* Owlready * Equivalenting:", concept, other_concept, file=sys.stderr)
+                if debug: print("* Owlready * Equivalenting:", concept, other_concept)
                 
     for child, parents in new_parents.items():
       old = set(parent for parent in child.is_a if not isinstance(parent, Restriction))
@@ -489,7 +490,7 @@ class Ontology(object):
       new = _keep_most_specific(new, consider_equivalence=False)
       if old == new: continue
       
-      if debug: print("* Owlready * Reparenting %s:" % child, old, "=>", new, file=sys.stderr)
+      if debug: print("* Owlready * Reparenting %s:" % child, old, "=>", new)
       new_is_a = list(child.is_a)
       for removed in old - new: new_is_a.remove(removed)
       for added   in new - old: new_is_a.append(added)
@@ -497,7 +498,7 @@ class Ontology(object):
       
       for child_eq in child.equivalent_to:
         if isinstance(child_eq, ThingClass):
-          if debug: print("* Owlready * Reparenting %s (since equivalent):" % child_eq, old, "=>", new, file=sys.stderr)
+          if debug: print("* Owlready * Reparenting %s (since equivalent):" % child_eq, old, "=>", new)
           new_is_a = list(child_eq.is_a)
           for removed in old - new:
             if removed in new_is_a: new_is_a.remove(removed)
@@ -857,7 +858,11 @@ class EntityClass(type):
       old = Class.is_a
       type.__setattr__(Class, "is_a", _CallbackList(value, Class, "_class_is_a_changed", "is_a"))
       Class._class_is_a_changed(Class.is_a, "is_a", old)
-    type.__setattr__(Class, attr, value)
+    try:
+      type.__setattr__(Class, attr, value)
+    except TypeError:
+      print("ERROR:",Class)
+
     
   def _class_is_a_changed(Class, is_a, Prop, old):
     bases = tuple(i for i in Class.is_a if isinstance(i, EntityClass)) + tuple(i for i in Class.is_a if (not isinstance(i, EntityClass)) and (not isinstance(i, Restriction)))
@@ -2061,7 +2066,7 @@ class Annotations(object):
       for i in range(len(values)): yield prop, values[i], langs[i]
   def __iter__(self): return self.values.__iter__()
       
-  def langs_for_prop(self): return set(self.langs[key])
+  def langs_for_prop(self,key ): return set(self.langs[key])
   
   def _split_key_lang(self, key):
     if isinstance(key, tuple): key, lang = key

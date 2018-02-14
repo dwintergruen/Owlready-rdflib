@@ -205,12 +205,12 @@ class OWLXMLHandler(sax.handler.ContentHandler):
       else:
         self.annots.add(((self.objs[-2], self.current_lang), self.objs[-1]))
       if (self.objs[-2].name == "python_module") and (self.objs[-2].ontology.name == "owlready_ontology"):
-        print("* Owlready *     ...importing Python module '%s' required by ontology '%s'..." % (self.objs[-1], self.ontology.name), file = sys.stderr)
+        print("* Owlready *     ...importing Python module '%s' required by ontology '%s'..." % (self.objs[-1], self.ontology.name))
         try: __import__(self.objs[-1])
         except ImportError:
-          print("\n* Owlready * ERROR: cannot import Python module!\n", file = sys.stderr)
+          print("\n* Owlready * ERROR: cannot import Python module!\n")
           sys.excepthook(*sys.exc_info())
-          print("\n\n\n", file = sys.stderr)
+          print("\n\n\n")
       del self.objs[-2:]
       
     elif (tag == "HasKey"):
@@ -248,12 +248,11 @@ def fix_mro():
   for Class in broken_classes: Class._recalc_mro()
   if owlready._MRO_BROKEN_CLASSES:
     if owlready._MRO_BROKEN_CLASSES == broken_classes: # Nothing fixed => failed!
-      print(file = sys.stderr)
       warnings.warn("Inconsistent MRO for %s! Using a simplified degraded MRO computation algorithm." % ", ".join(Class.__name__ for Class in broken_classes), OwlReadyMROWarning, 4)
     else:
       fix_mro()
   else:
-    print(" ok.", file = sys.stderr)
+    print(" ok.")
     
 def parse(f, ontology = None):
   saved_default_onto = owlready.DEFAULT_ONTOLOGY
@@ -266,7 +265,7 @@ def parse(f, ontology = None):
   handler.end_parsing()
   owlready.DEFAULT_ONTOLOGY = saved_default_onto
   if owlready._MRO_BROKEN_CLASSES:
-    print("* Owlready * Fixing MRO for ontology %s..." % handler.ontology, end = "", file = sys.stderr)
+    print("* Owlready * Fixing MRO for ontology %s..." % handler.ontology)
     fix_mro()
   owlready._MRO_BROKEN_CLASSES = None
   return handler.ontology
